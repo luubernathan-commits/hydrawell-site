@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Network — HydraWell Medicine 5.0</title>
+<meta name="description" content="Six specialised AI agents powering HydraWell's Medicine 5.0 Operating System — for AHPRA-registered prescribers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ────────────────────────────────────────────────── */
+:root {
+  --bg-base:        #0a0f1a;
+  --bg-surface:     #0f172a;
+  --bg-elevated:    #1e293b;
+  --bg-overlay:     #273349;
+
+  --teal-deep:      #01696f;
+  --teal:           #0d9488;
+  --teal-mid:       #2a8f8c;
+  --teal-light:     #4f98a3;
+  --teal-glow:      rgba(13,148,136,0.15);
+  --teal-border:    rgba(79,152,163,0.3);
+
+  --emerald:        #10b981;
+  --violet:         #8b5cf6;
+  --amber:          #f59e0b;
+  --rose:           #f43f5e;
+
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+
+  --border:         rgba(148,163,184,0.1);
+  --border-strong:  rgba(148,163,184,0.2);
+
+  --radius-sm:      6px;
+  --radius:         10px;
+  --radius-lg:      14px;
+  --radius-full:    9999px;
+
+  --shadow-teal:    0 4px 24px rgba(13,148,136,0.25);
+  --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── RESET ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+img, svg { display: block; max-width: 100%; }
+h1,h2,h3,h4 { text-wrap: balance; line-height: 1.1; }
+p { text-wrap: pretty; }
+
+/* ─── NAV ──────────────────────────────────────────────────── */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  background: rgba(10,15,26,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(1.25rem, 5vw, 3.5rem);
+  transition: box-shadow var(--transition);
+}
+.nav.scrolled { box-shadow: 0 4px 32px rgba(0,0,0,0.5); }
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.025em; line-height: 1; }
+.nav-logo-text .well { color: var(--teal-light); }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.875rem, 2.5vw, 2rem);
+}
+.nav-links a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition);
+}
+.nav-links a:hover, .nav-links a.active { color: var(--text-primary); }
+.nav-links a.active { color: var(--teal-light); }
+.btn-demo {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  background: var(--teal-deep);
+  color: #fff;
+  border-radius: var(--radius);
+  transition: background var(--transition), box-shadow var(--transition);
+}
+.btn-demo:hover { background: var(--teal); box-shadow: var(--shadow-teal); color: #fff; }
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+}
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 64px; left: 0; right: 0;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  z-index: 190;
+  flex-direction: column;
+  gap: 0;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  transition: color var(--transition);
+}
+.mobile-menu a:last-child { border-bottom: none; color: var(--teal-light); font-weight: 600; }
+
+/* ─── PAGE HERO ─────────────────────────────────────────────── */
+.page-hero {
+  position: relative;
+  padding: clamp(7rem, 12vw, 9rem) clamp(1.25rem, 5vw, 3.5rem) clamp(3rem, 6vw, 5rem);
+  text-align: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.hero-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79,152,163,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,152,163,0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black 0%, transparent 80%);
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black 0%, transparent 80%);
+  pointer-events: none;
+}
+.hero-glow {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 360px;
+  background: radial-gradient(ellipse, rgba(13,148,136,0.14) 0%, transparent 65%);
+  pointer-events: none;
+}
+.page-hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+.page-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(79,152,163,0.1);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-full);
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+  margin-bottom: 1.75rem;
+}
+.page-hero h1 {
+  font-size: clamp(2.25rem, 5vw + 0.5rem, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+  margin-bottom: 1.25rem;
+}
+.page-hero h1 .gradient {
+  background: linear-gradient(140deg, #f1f5f9 0%, var(--teal-light) 50%, var(--teal) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.page-hero p {
+  font-size: clamp(0.9375rem, 1.5vw + 0.3rem, 1.25rem);
+  color: var(--text-secondary);
+  max-width: 580px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.65;
+}
+.page-hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--teal-deep);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+.btn-primary:hover {
+  background: var(--teal);
+  box-shadow: var(--shadow-teal);
+  transform: translateY(-1px);
+  color: #fff;
+}
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  transition: all var(--transition);
+}
+.btn-outline:hover {
+  color: var(--text-primary);
+  border-color: var(--teal-border);
+  background: rgba(79,152,163,0.08);
+}
+
+/* ─── ARCHITECTURE OVERVIEW BAR ─────────────────────────────── */
+.arch-bar {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem clamp(1.25rem, 5vw, 3.5rem);
+}
+.arch-bar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.arch-bar-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  flex-shrink: 0;
+}
+.arch-bar-agents {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.arch-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  transition: all var(--transition);
+  cursor: default;
+}
+.arch-pill.live {
+  border-color: rgba(16,185,129,0.3);
+  color: var(--emerald);
+  background: rgba(16,185,129,0.08);
+}
+.arch-pill .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.arch-pill.live .dot { animation: dot-pulse 2s ease-in-out infinite; }
+@keyframes dot-pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.5; transform:scale(0.8); }
+}
+
+/* ─── MAIN CONTENT ──────────────────────────────────────────── */
+.main { padding: clamp(3rem, 6vw, 5rem) clamp(1.25rem, 5vw, 3.5rem); }
+.main-inner { max-width: 1200px; margin: 0 auto; }
+
+/* ─── HYDRA PRIME CALLOUT ────────────────────────────────────── */
+.prime-callout {
+  background: linear-gradient(135deg, rgba(79,152,163,0.08) 0%, rgba(13,148,136,0.05) 100%);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-lg);
+  padding: 1.875rem 2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.prime-callout::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--teal-deep), var(--teal), var(--teal-light));
+}
+.prime-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(79,152,163,0.15);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-light);
+  flex-shrink: 0;
+}
+.prime-callout h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.015em;
+  color: var(--teal-light);
+}
+.prime-callout p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ─── SECTION LABEL ─────────────────────────────────────────── */
+.agents-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+  margin-bottom: 1.25rem;
+}
+
+/* ─── AGENT CARDS GRID ──────────────────────────────────────── */
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+.agent-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.agent-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: transparent;
+  transition: background var(--transition);
+}
+.agent-card.live {
+  background: linear-gradient(160deg, rgba(79,152,163,0.04) 0%, var(--bg-surface) 100%);
+  border-color: rgba(79,152,163,0.2);
+}
+.agent-card.live::before {
+  background: linear-gradient(90deg, var(--teal-deep), var(--teal), var(--teal-light));
+}
+.agent-card:hover {
+  border-color: var(--teal-border);
+  box-shadow: 0 6px 32px rgba(79,152,163,0.12);
+  transform: translateY(-2px);
+}
+.agent-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.agent-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(79,152,163,0.1);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-light);
+  flex-shrink: 0;
+}
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge-live {
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: var(--emerald);
+}
+.badge-soon {
+  background: rgba(100,116,139,0.1);
+  border: 1px solid rgba(100,116,139,0.18);
+  color: var(--text-muted);
+}
+.agent-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--teal-light);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 3px;
+}
+.agent-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+}
+.agent-tagline {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--teal-light);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 0.875rem;
+}
+.agent-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+.agent-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+}
+.cap-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  background: rgba(79,152,163,0.08);
+  border: 1px solid rgba(79,152,163,0.18);
+  color: var(--teal-light);
+  letter-spacing: 0.04em;
+}
+.cap-tag.muted {
+  background: rgba(100,116,139,0.08);
+  border-color: rgba(100,116,139,0.15);
+  color: var(--text-muted);
+}
+.agent-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.agent-status {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.agent-status.live { color: var(--emerald); }
+.agent-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal-light);
+  transition: gap var(--transition), color var(--transition);
+}
+.agent-cta:hover { gap: 10px; color: var(--teal); }
+
+/* ─── ORCHESTRATION DIAGRAM ─────────────────────────────────── */
+.orch-section {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: clamp(3rem, 6vw, 5rem) clamp(1.25rem, 5vw, 3.5rem);
+}
+.orch-inner { max-width: 1200px; margin: 0 auto; }
+.orch-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+  margin-bottom: 0.875rem;
+}
+.orch-section h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+.orch-section p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 540px;
+  margin-bottom: 2.5rem;
+  line-height: 1.7;
+}
+.orch-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.orch-prime {
+  background: linear-gradient(135deg, rgba(79,152,163,0.14) 0%, rgba(13,148,136,0.08) 100%);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 2rem;
+  text-align: center;
+  width: 100%;
+  max-width: 340px;
+  position: relative;
+}
+.orch-prime h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal-light);
+  margin-bottom: 3px;
+  letter-spacing: -0.015em;
+}
+.orch-prime p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 0;
+  max-width: none;
+}
+.orch-connector {
+  width: 2px;
+  height: 32px;
+  background: linear-gradient(to bottom, var(--teal-deep), var(--bg-elevated));
+  flex-shrink: 0;
+}
+.orch-agents-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+.orch-agent-node {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.875rem 0.75rem;
+  text-align: center;
+  transition: all var(--transition);
+}
+.orch-agent-node.live {
+  border-color: rgba(79,152,163,0.25);
+  background: rgba(79,152,163,0.06);
+}
+.orch-agent-node:hover {
+  border-color: var(--teal-border);
+  box-shadow: 0 4px 16px rgba(79,152,163,0.1);
+}
+.orch-agent-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: rgba(79,152,163,0.1);
+  border: 1px solid var(--teal-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-light);
+  margin: 0 auto 0.625rem;
+}
+.orch-agent-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+.orch-agent-node.live .orch-agent-name { color: var(--text-primary); }
+.orch-agent-status {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.orch-agent-node.live .orch-agent-status { color: var(--emerald); }
+
+/* ─── CTA BAR ────────────────────────────────────────────────── */
+.cta-bar {
+  background: var(--bg-base);
+  padding: clamp(3rem, 6vw, 5rem) clamp(1.25rem, 5vw, 3.5rem);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px; height: 360px;
+  background: radial-gradient(ellipse, rgba(13,148,136,0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+.cta-content { position: relative; z-index: 1; }
+.cta-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+  margin-bottom: 0.875rem;
+}
+.cta-bar h2 {
+  font-size: clamp(1.875rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+.cta-bar p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto 2.25rem;
+  line-height: 1.65;
+}
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+}
+
+/* ─── FOOTER ────────────────────────────────────────────────── */
+footer {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  padding: 1.75rem clamp(1.25rem, 5vw, 3.5rem) 1.5rem;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.125rem;
+  padding-bottom: 1.125rem;
+  border-bottom: 1px solid var(--border);
+}
+.footer-logo { display: flex; align-items: center; gap: 8px; }
+.footer-logo-text { font-size: 14px; font-weight: 700; letter-spacing: -0.015em; }
+.footer-logo-text .well { color: var(--teal-light); }
+.footer-links { display: flex; gap: 1.25rem; }
+.footer-links a { font-size: 12px; color: var(--text-muted); transition: color var(--transition); }
+.footer-links a:hover { color: var(--teal-light); }
+.footer-compliance {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+.footer-compliance strong { color: var(--text-secondary); font-weight: 600; }
+.footer-compliance a { color: var(--teal-light); transition: opacity var(--transition); }
+.footer-compliance a:hover { opacity: 0.8; }
+
+/* ─── REVEAL ────────────────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.3s; }
+.reveal-d4 { transition-delay: 0.4s; }
+.reveal-d5 { transition-delay: 0.5s; }
+
+/* ─── RESPONSIVE ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  .orch-agents-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .agents-grid { grid-template-columns: 1fr; }
+  .orch-agents-row { grid-template-columns: repeat(2, 1fr); }
+  .page-hero-actions { flex-direction: column; max-width: 280px; margin: 0 auto; }
+  .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+  .footer-inner { flex-direction: column; align-items: flex-start; }
+  .arch-bar-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─────────────────────────────────────────────────── -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="HydraWell home">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <path d="M15 2.5C15 2.5 5.5 11.5 5.5 18C5.5 23.25 9.75 27.5 15 27.5C20.25 27.5 24.5 23.25 24.5 18C24.5 11.5 15 2.5 15 2.5Z" fill="#4f98a3" opacity="0.85"/>
+        <path d="M15 8.5C15 8.5 9.5 14.5 9.5 18.5C9.5 21.54 12 24 15 24C18 24 20.5 21.54 20.5 18.5C20.5 14.5 15 8.5 15 8.5Z" fill="#0a0f1a"/>
+        <path d="M15 13C15 13 11.5 16.5 11.5 19C11.5 20.93 13.07 22.5 15 22.5C16.93 22.5 18.5 20.93 18.5 19C18.5 16.5 15 13 15 13Z" fill="#4f98a3" opacity="0.55"/>
+      </svg>
+      <span class="nav-logo-text"><span>Hydra</span><span class="well">Well</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="/agents" class="active">Agents</a>
+      <a href="/sentinel">Sentinel</a>
+      <a href="/#team">Team</a>
+      <a href="/#demo" class="btn-demo">Request Demo</a>
+    </div>
+    <button class="nav-hamburger" id="hamburgerBtn" aria-label="Open navigation">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/agents">Agents</a>
+  <a href="/sentinel">Sentinel</a>
+  <a href="/#team">Team</a>
+  <a href="/#demo">Request Demo</a>
+</div>
+
+<!-- ─── PAGE HERO ─────────────────────────────────────────────── -->
+<section class="page-hero" aria-label="Agent network overview">
+  <div class="hero-grid-bg" aria-hidden="true"></div>
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="page-hero-content">
+    <div class="page-label">HydraWell Medicine 5.0</div>
+    <h1><span class="gradient">The Agent Network</span></h1>
+    <p>Six specialised AI agents operating under a single HITL framework. Each agent is a domain expert. Together, they form Australia's first AI-native clinical intelligence platform.</p>
+    <div class="page-hero-actions">
+      <a href="/sentinel" class="btn-primary">
+        Open Sentinel — Live Now
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="/#demo" class="btn-outline">Request Full Demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── STATUS BAR ────────────────────────────────────────────── -->
+<div class="arch-bar">
+  <div class="arch-bar-inner">
+    <div class="arch-bar-label">Platform Status</div>
+    <div class="arch-bar-agents">
+      <div class="arch-pill live">
+        <span class="dot" aria-hidden="true"></span>Sentinel — Live
+      </div>
+      <div class="arch-pill">
+        <span class="dot" aria-hidden="true"></span>Architect — Dev
+      </div>
+      <div class="arch-pill">
+        <span class="dot" aria-hidden="true"></span>Scribe — Dev
+      </div>
+      <div class="arch-pill">
+        <span class="dot" aria-hidden="true"></span>Compass — Dev
+      </div>
+      <div class="arch-pill">
+        <span class="dot" aria-hidden="true"></span>Aegis — Dev
+      </div>
+      <div class="arch-pill">
+        <span class="dot" aria-hidden="true"></span>Hydra Prime — Dev
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── AGENT CARDS ───────────────────────────────────────────── -->
+<div class="main">
+  <div class="main-inner">
+
+    <!-- Hydra Prime callout -->
+    <div class="prime-callout reveal">
+      <div class="prime-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      </div>
+      <div>
+        <h3>Hydra Prime — The Orchestrating Meta-Agent</h3>
+        <p>All five specialist agents operate under the coordination of Hydra Prime. It manages context across sessions, routes workflows between agents, and enforces HITL compliance checkpoints throughout every clinical pathway. Think of it as the central nervous system — each agent is a specialised limb.</p>
+      </div>
+    </div>
+
+    <div class="agents-section-label">Six Specialist Agents</div>
+    <div class="agents-grid">
+
+      <!-- Sentinel -->
+      <div class="agent-card live reveal">
+        <div class="agent-top">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <span class="badge badge-live">● Live</span>
+        </div>
+        <div class="agent-num">Agent 01</div>
+        <h3>Sentinel</h3>
+        <div class="agent-tagline">AI Patient Intake &amp; Eligibility Router</div>
+        <p class="agent-desc">Sentinel is the front door to HydraWell. It screens new patients for peptide therapy candidacy using structured clinical intake, surfaces contraindications and red flags, scores eligibility across multiple peptide protocols, and routes the patient to the appropriate prescriber pathway — all before a single clinical minute is spent.</p>
+        <div class="agent-capabilities">
+          <span class="cap-tag">Patient Screening</span>
+          <span class="cap-tag">Eligibility Scoring</span>
+          <span class="cap-tag">Red Flag Detection</span>
+          <span class="cap-tag">Protocol Routing</span>
+          <span class="cap-tag">HITL Handoff</span>
+        </div>
+        <div class="agent-footer">
+          <div class="agent-status live">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+            Deployed &amp; Live
+          </div>
+          <a href="/sentinel" class="agent-cta">
+            Open Sentinel
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Architect -->
+      <div class="agent-card reveal reveal-d1">
+        <div class="agent-top">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="12" y2="13"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 02</div>
+        <h3>Architect</h3>
+        <div class="agent-tagline">Peptide Protocol Stack Designer</div>
+        <p class="agent-desc">Given Sentinel's eligibility output plus biomarker data from Bloody Good Tests and eVolt 360, Architect synthesises a personalised protocol stack. It cross-references evidence, dosing guidelines, and contraindication matrices — then presents a structured recommendation for prescriber review and approval.</p>
+        <div class="agent-capabilities">
+          <span class="cap-tag muted">Protocol Design</span>
+          <span class="cap-tag muted">Biomarker Integration</span>
+          <span class="cap-tag muted">Evidence Synthesis</span>
+          <span class="cap-tag muted">Dosing Optimisation</span>
+        </div>
+        <div class="agent-footer">
+          <div class="agent-status">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            In Development
+          </div>
+          <span style="font-size:12px;color:var(--text-muted);">Q3 2026</span>
+        </div>
+      </div>
+
+      <!-- Scribe -->
+      <div class="agent-card reveal reveal-d2">
+        <div class="agent-top">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 03</div>
+        <h3>Scribe</h3>
+        <div class="agent-tagline">Auto-SOAP Note Generator</div>
+        <p class="agent-desc">Scribe transforms consultation transcripts — voice-to-text or structured input — into fully formatted SOAP notes that meet Australian clinical documentation standards. Prescribers review, edit, and sign-off in a fraction of the time. Integrates directly with Architect outputs for protocol-specific documentation.</p>
+        <div class="agent-capabilities">
+          <span class="cap-tag muted">SOAP Generation</span>
+          <span class="cap-tag muted">Voice Transcription</span>
+          <span class="cap-tag muted">Clinical Formatting</span>
+          <span class="cap-tag muted">Prescriber Sign-off</span>
+        </div>
+        <div class="agent-footer">
+          <div class="agent-status">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            In Development
+          </div>
+          <span style="font-size:12px;color:var(--text-muted);">Q3 2026</span>
+        </div>
+      </div>
+
+      <!-- Compass -->
+      <div class="agent-card reveal">
+        <div class="agent-top">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 04</div>
+        <h3>Compass</h3>
+        <div class="agent-tagline">Longitudinal Biomarker Trend Analysis</div>
+        <p class="agent-desc">Compass ingests time-series biomarker data from Bloody Good Tests and eVolt 360 to surface clinically meaningful trends. It flags deviations from optimal ranges, highlights response to peptide protocols over time, and generates plain-language trend reports for both prescribers and patients.</p>
+        <div class="agent-capabilities">
+          <span class="cap-tag muted">Trend Analysis</span>
+          <span class="cap-tag muted">Anomaly Detection</span>
+          <span class="cap-tag muted">BGT Integration</span>
+          <span class="cap-tag muted">eVolt Integration</span>
+          <span class="cap-tag muted">Patient Reports</span>
+        </div>
+        <div class="agent-footer">
+          <div class="agent-status">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            In Development
+          </div>
+          <span style="font-size:12px;color:var(--text-muted);">Q4 2026</span>
+        </div>
+      </div>
+
+      <!-- Aegis -->
+      <div class="agent-card reveal reveal-d1">
+        <div class="agent-top">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 05</div>
+        <h3>Aegis</h3>
+        <div class="agent-tagline">AHPRA/TGA Compliance Guard</div>
+        <p class="agent-desc">Aegis is HydraWell's regulatory immune system. It monitors all agent outputs in real time for AHPRA/TGA compliance, maintains immutable audit trails for every clinical interaction, and fires prescriber alerts for potential regulatory breaches — before they become exposures.</p>
+        <div class="agent-capabilities">
+          <span class="cap-tag muted">Compliance Monitoring</span>
+          <span class="cap-tag muted">Audit Trails</span>
+          <span class="cap-tag muted">AHPRA Guardrails</span>
+          <span class="cap-tag muted">TGA AP Compliance</span>
+          <span class="cap-tag muted">Risk Alerts</span>
+        </div>
+        <div class="agent-footer">
+          <div class="agent-status">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            In Development
+          </div>
+          <span style="font-size:12px;color:var(--text-muted);">Q4 2026</span>
+        </div>
+      </div>
+
+      <!-- Hydra Prime -->
+      <div class="agent-card reveal reveal-d2">
+        <div class="agent-top">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 06</div>
+        <h3>Hydra Prime</h3>
+        <div class="agent-tagline">Meta-Agent Orchestrator</div>
+        <p class="agent-desc">Hydra Prime is the intelligence layer above all other agents. It orchestrates multi-agent workflows, maintains cross-session patient context, routes tasks to the right specialist agent, and ensures every clinical pathway is coherent, compliant, and human-in-the-loop. The six heads, one mind.</p>
+        <div class="agent-capabilities">
+          <span class="cap-tag muted">Agent Orchestration</span>
+          <span class="cap-tag muted">Context Management</span>
+          <span class="cap-tag muted">Workflow Routing</span>
+          <span class="cap-tag muted">HITL Enforcement</span>
+          <span class="cap-tag muted">Session Memory</span>
+        </div>
+        <div class="agent-footer">
+          <div class="agent-status">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            In Development
+          </div>
+          <span style="font-size:12px;color:var(--text-muted);">2027</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── ORCHESTRATION DIAGRAM ─────────────────────────────────── -->
+<div class="orch-section">
+  <div class="orch-inner">
+    <div class="orch-section-label">Architecture</div>
+    <h2>How the agents work together</h2>
+    <p>Hydra Prime sits above the specialist agents, coordinating workflows, enforcing HITL checkpoints, and maintaining patient context across every session.</p>
+    <div class="orch-diagram reveal">
+      <div class="orch-prime">
+        <h4>Hydra Prime</h4>
+        <p>Meta-Agent Orchestrator</p>
+      </div>
+      <div class="orch-connector" aria-hidden="true"></div>
+      <div class="orch-agents-row">
+        <div class="orch-agent-node live">
+          <div class="orch-agent-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <div class="orch-agent-name">Sentinel</div>
+          <div class="orch-agent-status">● Live</div>
+        </div>
+        <div class="orch-agent-node">
+          <div class="orch-agent-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/></svg>
+          </div>
+          <div class="orch-agent-name">Architect</div>
+          <div class="orch-agent-status">Dev</div>
+        </div>
+        <div class="orch-agent-node">
+          <div class="orch-agent-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          </div>
+          <div class="orch-agent-name">Scribe</div>
+          <div class="orch-agent-status">Dev</div>
+        </div>
+        <div class="orch-agent-node">
+          <div class="orch-agent-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          </div>
+          <div class="orch-agent-name">Compass</div>
+          <div class="orch-agent-status">Dev</div>
+        </div>
+        <div class="orch-agent-node">
+          <div class="orch-agent-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="orch-agent-name">Aegis</div>
+          <div class="orch-agent-status">Dev</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CTA ──────────────────────────────────────────────────── -->
+<div class="cta-bar">
+  <div class="cta-glow" aria-hidden="true"></div>
+  <div class="cta-content">
+    <div class="cta-label reveal">Get Early Access</div>
+    <h2 class="reveal">Start with Sentinel today</h2>
+    <p class="reveal">Sentinel is live and ready for AHPRA-registered prescribers. Request a demo to see the full roadmap — or jump straight in.</p>
+    <div class="cta-actions reveal">
+      <a href="/sentinel" class="btn-primary">
+        Open Sentinel
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="/#demo" class="btn-outline">Request Full Demo</a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FOOTER ───────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <a href="/" class="footer-logo" aria-label="HydraWell home">
+      <svg width="22" height="22" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <path d="M15 2.5C15 2.5 5.5 11.5 5.5 18C5.5 23.25 9.75 27.5 15 27.5C20.25 27.5 24.5 23.25 24.5 18C24.5 11.5 15 2.5 15 2.5Z" fill="#4f98a3" opacity="0.85"/>
+        <path d="M15 8.5C15 8.5 9.5 14.5 9.5 18.5C9.5 21.54 12 24 15 24C18 24 20.5 21.54 20.5 18.5C20.5 14.5 15 8.5 15 8.5Z" fill="#0a0f1a"/>
+        <path d="M15 13C15 13 11.5 16.5 11.5 19C11.5 20.93 13.07 22.5 15 22.5C16.93 22.5 18.5 20.93 18.5 19C18.5 16.5 15 13 15 13Z" fill="#4f98a3" opacity="0.55"/>
+      </svg>
+      <span class="footer-logo-text"><span>Hydra</span><span class="well">Well</span></span>
+    </a>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">AHPRA Compliance</a>
+    </div>
+  </div>
+  <div class="footer-compliance">
+    <strong>Regulatory Notice:</strong> HydraWell is a clinical decision support platform intended solely for use by AHPRA-registered prescribers. All AI-generated outputs require review and approval by a qualified prescriber before any clinical action. Peptide therapies require a valid prescription under TGA Authorised Prescriber requirements. © 2026 HydraWell Pty Ltd. Refer to the <a href="#">Privacy Policy</a> and <a href="#">AHPRA Compliance Framework</a> for full terms.
+  </div>
+</footer>
+
+<!-- ─── SCRIPTS ──────────────────────────────────────────────── -->
+<script>
+(function () {
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', function () {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  const btn = document.getElementById('hamburgerBtn');
+  const menu = document.getElementById('mobileMenu');
+  if (btn && menu) {
+    btn.addEventListener('click', function () {
+      const isOpen = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(isOpen));
+    });
+    menu.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
+  const reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -28px 0px' });
+    reveals.forEach(function (el) { io.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add('in'); });
+  }
+})();
+</script>
+</body>
+</html>

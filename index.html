@@ -1,2755 +1,1271 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sentinel — HydraWell AI Patient Intake & Eligibility Router</title>
+<title>HydraWell — Medicine 5.0 Operating System</title>
+<meta name="description" content="AI-powered clinical intelligence for Australia's peptide therapy ecosystem. Built for AHPRA-registered prescribers.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
 /* ─── DESIGN TOKENS ─────────────────────────────────────────── */
 :root {
-  --bg-base:       #0a0f1a;
-  --bg-surface:    #0f172a;
-  --bg-elevated:   #1e293b;
-  --bg-overlay:    #273349;
-  --bg-input:      #1a2540;
+  --bg-base:        #0a0f1a;
+  --bg-surface:     #0f172a;
+  --bg-elevated:    #1e293b;
+  --bg-overlay:     #273349;
+  --bg-input:       #1a2540;
 
-  --teal-deep:     #01696f;
-  --teal:          #0d9488;
-  --teal-light:    #4f98a3;
-  --teal-glow:     rgba(13,148,136,0.15);
-  --teal-border:   rgba(79,152,163,0.3);
+  --teal-deep:      #01696f;
+  --teal:           #0d9488;
+  --teal-mid:       #2a8f8c;
+  --teal-light:     #4f98a3;
+  --teal-glow:      rgba(13,148,136,0.15);
+  --teal-border:    rgba(79,152,163,0.3);
 
-  --amber:         #f59e0b;
-  --amber-bg:      rgba(245,158,11,0.12);
-  --amber-border:  rgba(245,158,11,0.3);
+  --amber:          #f59e0b;
+  --rose:           #f43f5e;
+  --emerald:        #10b981;
+  --violet:         #8b5cf6;
 
-  --rose:          #f43f5e;
-  --rose-bg:       rgba(244,63,94,0.12);
-  --rose-border:   rgba(244,63,94,0.3);
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
 
-  --emerald:       #10b981;
-  --emerald-bg:    rgba(16,185,129,0.12);
-  --emerald-border:rgba(16,185,129,0.3);
+  --border:         rgba(148,163,184,0.1);
+  --border-strong:  rgba(148,163,184,0.2);
 
-  --violet:        #8b5cf6;
-  --violet-bg:     rgba(139,92,246,0.12);
+  --radius-sm:      6px;
+  --radius:         10px;
+  --radius-lg:      14px;
+  --radius-xl:      20px;
+  --radius-full:    9999px;
 
-  --text-primary:  #f1f5f9;
-  --text-secondary:#94a3b8;
-  --text-muted:    #64748b;
-  --text-inverse:  #0f172a;
+  --shadow:         0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.5);
+  --shadow-teal:    0 4px 24px rgba(13,148,136,0.25);
 
-  --border:        rgba(148,163,184,0.1);
-  --border-strong: rgba(148,163,184,0.2);
-
-  --radius-sm:     6px;
-  --radius:        10px;
-  --radius-lg:     14px;
-  --radius-xl:     20px;
-
-  --shadow-sm:     0 1px 3px rgba(0,0,0,0.4);
-  --shadow:        0 4px 16px rgba(0,0,0,0.4);
-  --shadow-lg:     0 8px 32px rgba(0,0,0,0.5);
-  --shadow-teal:   0 4px 24px rgba(13,148,136,0.2);
-
-  --sidebar-w:     260px;
-  --transition:    0.2s cubic-bezier(0.4,0,0.2,1);
+  --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
 /* ─── RESET ─────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 body {
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-base);
   color: var(--text-primary);
   min-height: 100vh;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-input, select, textarea, button { font-family: inherit; }
-button { cursor: pointer; border: none; background: none; }
 a { color: inherit; text-decoration: none; }
 ul { list-style: none; }
-code, .mono { font-family: 'JetBrains Mono', monospace; }
+img, svg { display: block; max-width: 100%; }
+p { text-wrap: pretty; }
+h1,h2,h3,h4 { text-wrap: balance; line-height: 1.1; }
 
-/* ─── SCROLLBAR ──────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--bg-overlay); border-radius: 99px; }
-
-/* ─── LAYOUT ─────────────────────────────────────────────────── */
-.app-shell {
-  display: flex;
-  min-height: 100vh;
-}
-
-/* ─── SIDEBAR ────────────────────────────────────────────────── */
-.sidebar {
-  width: var(--sidebar-w);
-  background: var(--bg-surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
+/* ─── NAV ──────────────────────────────────────────────────── */
+.nav {
   position: fixed;
-  top: 0; left: 0; bottom: 0;
-  z-index: 100;
-  overflow-y: auto;
-}
-.sidebar-header {
-  padding: 20px 20px 16px;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  background: rgba(10,15,26,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
-}
-.logo-lockup {
+  height: 64px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  padding: 0 clamp(1.25rem, 5vw, 3.5rem);
+  transition: box-shadow var(--transition);
 }
-.logo-mark {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-}
-.logo-text {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.logo-text .brand { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
-.logo-text .brand span { color: var(--teal-light); }
-.logo-text .tagline { font-size: 9px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; }
-.agent-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--teal-glow);
-  border: 1px solid var(--teal-border);
-  border-radius: 99px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--teal-light);
-}
-.agent-badge .dot {
-  width: 6px; height: 6px;
-  background: var(--teal);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-.sidebar-nav {
-  padding: 16px 12px;
-  flex: 1;
-}
-.nav-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  padding: 0 8px;
-  margin-bottom: 8px;
-}
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all var(--transition);
-  margin-bottom: 2px;
-  position: relative;
-}
-.nav-item:hover { background: var(--bg-elevated); }
-.nav-item.active {
-  background: var(--teal-glow);
-  border: 1px solid var(--teal-border);
-}
-.nav-item.active .nav-icon { color: var(--teal); }
-.nav-item.active .nav-label-text { color: var(--text-primary); }
-.nav-item.completed .nav-step-num {
-  background: var(--emerald);
-  color: var(--text-inverse);
-}
-.nav-icon { color: var(--text-muted); width: 16px; height: 16px; flex-shrink: 0; }
-.nav-step-num {
-  width: 20px; height: 20px;
-  background: var(--bg-overlay);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-.nav-label-text { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
-.nav-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.nav-item.locked { opacity: 0.4; cursor: not-allowed; }
-
-.nav-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 12px 8px;
-}
-
-.sidebar-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border);
-}
-.compliance-note {
-  font-size: 10px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-.compliance-note strong { color: var(--amber); }
-
-/* ─── MAIN CONTENT ───────────────────────────────────────────── */
-.main-content {
-  margin-left: var(--sidebar-w);
-  flex: 1;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.top-bar {
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 32px;
-  height: 60px;
+.nav.scrolled { box-shadow: 0 4px 32px rgba(0,0,0,0.5); }
+.nav-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky; top: 0;
-  z-index: 50;
-}
-.top-bar-left { display: flex; align-items: center; gap: 16px; }
-.stage-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
-.stage-sub { font-size: 12px; color: var(--text-muted); }
-.top-bar-right { display: flex; align-items: center; gap: 12px; }
-
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  font-size: 13px; font-weight: 500;
-  transition: all var(--transition);
-  white-space: nowrap;
-}
-.btn-primary {
-  background: var(--teal);
-  color: white;
-}
-.btn-primary:hover { background: #0f766e; box-shadow: var(--shadow-teal); }
-.btn-secondary {
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-strong);
-}
-.btn-secondary:hover { background: var(--bg-overlay); color: var(--text-primary); }
-.btn-demo {
-  background: var(--violet-bg);
-  color: #a78bfa;
-  border: 1px solid rgba(139,92,246,0.3);
-}
-.btn-demo:hover { background: rgba(139,92,246,0.2); }
-.btn-danger {
-  background: var(--rose-bg);
-  color: var(--rose);
-  border: 1px solid var(--rose-border);
-}
-.btn-sm { padding: 6px 12px; font-size: 12px; }
-.btn-lg { padding: 12px 24px; font-size: 14px; }
-
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.content-area {
-  padding: 32px;
-  flex: 1;
-  max-width: 1200px;
   width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
 }
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.nav-logo-text {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.nav-logo-text .well { color: var(--teal-light); }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.875rem, 2.5vw, 2rem);
+}
+.nav-links a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition);
+  white-space: nowrap;
+}
+.nav-links a:hover { color: var(--text-primary); }
+.btn-demo {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  background: var(--teal-deep);
+  color: #fff;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+.btn-demo:hover {
+  background: var(--teal);
+  box-shadow: var(--shadow-teal);
+  color: #fff;
+}
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 64px; left: 0; right: 0;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  z-index: 190;
+  flex-direction: column;
+  gap: 0;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  transition: color var(--transition);
+}
+.mobile-menu a:last-child { border-bottom: none; color: var(--teal-light); font-weight: 600; }
+.mobile-menu a:hover { color: var(--text-primary); }
 
-/* ─── CARDS ──────────────────────────────────────────────────── */
-.card {
+/* ─── HERO ─────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(7rem, 15vw, 10rem) clamp(1.25rem, 5vw, 3.5rem) clamp(4rem, 8vw, 6rem);
+  overflow: hidden;
+}
+.hero-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79,152,163,0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,152,163,0.055) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, black 0%, transparent 80%);
+  mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, black 0%, transparent 80%);
+  pointer-events: none;
+}
+.hero-glow {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 420px;
+  background: radial-gradient(ellipse, rgba(13,148,136,0.16) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; max-width: 860px; }
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(79,152,163,0.1);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-full);
+  padding: 5px 14px 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+  margin-bottom: 2rem;
+}
+.hero-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 8px var(--emerald);
+  animation: dot-pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.8); }
+}
+.hero-title {
+  font-size: clamp(2.5rem, 5.5vw + 0.75rem, 5.75rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  margin-bottom: 1.5rem;
+}
+.hero-title .brand-name {
+  background: linear-gradient(140deg, #f1f5f9 0%, var(--teal-light) 45%, var(--teal) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-tagline {
+  font-size: clamp(1rem, 1.5vw + 0.4rem, 1.375rem);
+  color: var(--text-secondary);
+  max-width: 580px;
+  margin: 0 auto 2.75rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 4rem;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  background: var(--teal-deep);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius);
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+.btn-primary:hover {
+  background: var(--teal);
+  box-shadow: var(--shadow-teal);
+  transform: translateY(-1px);
+  color: #fff;
+}
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  transition: all var(--transition);
+}
+.btn-outline:hover {
+  color: var(--text-primary);
+  border-color: var(--teal-border);
+  background: rgba(79,152,163,0.08);
+}
+.hero-divider {
+  width: 100%;
+  max-width: 680px;
+  height: 1px;
+  background: var(--border);
+  margin: 0 auto 2.75rem;
+}
+.hero-stats {
+  display: flex;
+  gap: clamp(2rem, 5vw, 5rem);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-stat-value {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
+  color: var(--teal-light);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.hero-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+}
+
+/* ─── SHARED SECTION STYLES ─────────────────────────────────── */
+section { padding: clamp(4rem, 8vw, 6.5rem) clamp(1.25rem, 5vw, 3.5rem); }
+.section-inner { max-width: 1200px; margin: 0 auto; }
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+  margin-bottom: 0.875rem;
+}
+.section-heading {
+  font-size: clamp(1.875rem, 3.5vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+.section-sub {
+  font-size: clamp(0.9375rem, 1.2vw + 0.25rem, 1.125rem);
+  color: var(--text-secondary);
+  max-width: 540px;
+  line-height: 1.65;
+}
+.section-header { margin-bottom: 3rem; }
+
+/* ─── PROBLEM SECTION ───────────────────────────────────────── */
+.section-problem { background: var(--bg-surface); }
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1.25rem;
+}
+.problem-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.875rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.problem-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--rose), transparent);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+.problem-card:hover::after { opacity: 0.6; }
+.problem-card:hover {
+  border-color: rgba(244,63,94,0.25);
+  box-shadow: 0 0 28px rgba(244,63,94,0.08);
+}
+.problem-icon {
+  width: 42px;
+  height: 42px;
+  background: rgba(244,63,94,0.1);
+  border: 1px solid rgba(244,63,94,0.2);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rose);
+  margin-bottom: 1.25rem;
+}
+.problem-stat {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  color: var(--rose);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.problem-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+.problem-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ─── MEDICINE 5.0 ──────────────────────────────────────────── */
+.section-m5 { background: var(--bg-base); }
+.m5-track {
+  position: relative;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  padding-bottom: 1.5rem;
+  scroll-snap-type: x mandatory;
+  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-overlay) transparent;
+}
+.m5-track::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 40px;
+  right: 40px;
+  height: 2px;
+  background: linear-gradient(90deg,
+    var(--bg-elevated) 0%,
+    var(--bg-overlay) 30%,
+    var(--teal-deep) 75%,
+    var(--teal) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.m5-era {
+  flex: 1 0 196px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 1rem 1rem;
+  position: relative;
+  z-index: 1;
+  scroll-snap-align: start;
+}
+.m5-node {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 2px solid var(--bg-overlay);
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+.m5-era.active .m5-node {
+  width: 26px;
+  height: 26px;
+  margin-top: -4px;
+  background: var(--teal);
+  border-color: var(--teal-light);
+  box-shadow: 0 0 18px rgba(13,148,136,0.6);
+}
+.m5-ver {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.375rem;
+}
+.m5-era.active .m5-ver { color: var(--teal-light); }
+.m5-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+.m5-era.active .m5-name { color: var(--text-primary); }
+.m5-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 160px;
+}
+.m5-era.active .m5-desc { color: var(--text-secondary); }
+.m5-hitl-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 0.75rem;
+  background: rgba(79,152,163,0.12);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-sm);
+  padding: 3px 9px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--teal-light);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.m5-callout {
+  margin-top: 2.5rem;
+  background: rgba(79,152,163,0.06);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.875rem;
+  display: flex;
+  gap: 1.125rem;
+  align-items: flex-start;
+}
+.m5-callout-icon { color: var(--teal-light); flex-shrink: 0; margin-top: 1px; }
+.m5-callout h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal-light);
+  margin-bottom: 5px;
+  letter-spacing: -0.01em;
+}
+.m5-callout p { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
+
+/* ─── 6-AGENT ARCHITECTURE ──────────────────────────────────── */
+.section-agents { background: var(--bg-surface); }
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 1.25rem;
+}
+.agent-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.agent-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: transparent;
+  transition: background var(--transition);
+}
+.agent-card.live {
+  border-color: rgba(79,152,163,0.2);
+}
+.agent-card.live::before {
+  background: linear-gradient(90deg, var(--teal-deep), var(--teal), var(--teal-light));
+}
+.agent-card:hover {
+  border-color: var(--teal-border);
+  box-shadow: 0 4px 28px rgba(79,152,163,0.12);
+  transform: translateY(-2px);
+}
+.agent-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.agent-icon {
+  width: 46px;
+  height: 46px;
+  background: rgba(79,152,163,0.1);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-light);
+  flex-shrink: 0;
+}
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: var(--radius-full);
+}
+.badge-live {
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: var(--emerald);
+}
+.badge-soon {
+  background: rgba(100,116,139,0.12);
+  border: 1px solid rgba(100,116,139,0.2);
+  color: var(--text-muted);
+}
+.agent-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal-light);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 3px;
+}
+.agent-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 0.625rem;
+  letter-spacing: -0.02em;
+}
+.agent-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+}
+.agent-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--teal-light);
+  transition: gap var(--transition), color var(--transition);
+}
+.agent-cta:hover { gap: 10px; color: var(--teal); }
+.agent-soon { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+.agents-more {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+/* ─── INTEGRATIONS ───────────────────────────────────────────── */
+.section-integrations { background: var(--bg-base); }
+.section-integrations .section-header { text-align: center; }
+.section-integrations .section-sub { margin: 0 auto; }
+.integrations-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  max-width: 780px;
+  margin: 0 auto;
+}
+.integration-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 1.875rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  transition: all var(--transition);
 }
-.card-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 20px;
+.integration-card:hover {
+  border-color: var(--teal-border);
+  box-shadow: 0 4px 24px rgba(79,152,163,0.1);
 }
-.card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-.card-icon {
-  width: 36px; height: 36px;
-  background: var(--teal-glow);
+.integration-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(79,152,163,0.08);
   border: 1px solid var(--teal-border);
   border-radius: var(--radius);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-
-/* ─── FORM ELEMENTS ─────────────────────────────────────────── */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.form-full { grid-column: 1 / -1; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field label {
-  font-size: 12px; font-weight: 500;
-  color: var(--text-secondary);
-  letter-spacing: 0.2px;
-}
-.field label .required { color: var(--rose); margin-left: 2px; }
-.field-hint { font-size: 11px; color: var(--text-muted); }
-
-input[type="text"], input[type="number"], input[type="date"], input[type="email"],
-select, textarea {
-  background: var(--bg-input);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  padding: 10px 12px;
-  color: var(--text-primary);
-  font-size: 13px;
-  transition: border-color var(--transition), box-shadow var(--transition);
-  width: 100%;
-}
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px var(--teal-glow);
-}
-input::placeholder, textarea::placeholder { color: var(--text-muted); }
-select option { background: var(--bg-elevated); }
-textarea { resize: vertical; min-height: 80px; }
-
-.input-with-unit {
-  position: relative;
-}
-.input-with-unit input { padding-right: 44px; }
-.input-unit {
-  position: absolute;
-  right: 12px; top: 50%;
-  transform: translateY(-50%);
-  font-size: 11px; font-weight: 500;
-  color: var(--text-muted);
-  pointer-events: none;
-}
-
-/* Range indicator */
-.range-field { display: flex; flex-direction: column; gap: 6px; }
-.range-input-row { display: flex; align-items: center; gap: 8px; }
-.range-input-row input { flex: 1; }
-.range-tag {
-  font-size: 11px; font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 99px;
-  white-space: nowrap;
-}
-.range-tag.normal { background: var(--emerald-bg); color: var(--emerald); }
-.range-tag.low    { background: var(--amber-bg); color: var(--amber); }
-.range-tag.high   { background: var(--rose-bg); color: var(--rose); }
-.range-tag.critical { background: var(--rose-bg); color: var(--rose); border: 1px solid var(--rose-border); }
-.range-hint { font-size: 11px; color: var(--text-muted); }
-
-/* Checkbox & radio chips */
-.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-strong);
-  border-radius: 99px;
-  font-size: 12px; font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition);
-  user-select: none;
-}
-.chip:hover { border-color: var(--teal-border); color: var(--teal-light); }
-.chip.selected {
-  background: var(--teal-glow);
-  border-color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--teal-light);
-}
-.chip input { display: none; }
-
-/* ─── PROGRESS BAR ──────────────────────────────────────────── */
-.progress-track {
-  height: 3px;
-  background: var(--bg-elevated);
-  border-radius: 99px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--teal-deep), var(--teal));
-  border-radius: 99px;
-  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
-}
-.progress-label {
-  font-size: 11px; color: var(--text-muted);
-  display: flex; justify-content: space-between;
-}
-
-/* ─── STEP HEADER ───────────────────────────────────────────── */
-.step-header {
-  margin-bottom: 28px;
-}
-.step-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 600;
-  color: var(--teal-light);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.step-badge svg { width: 14px; height: 14px; }
-.step-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.4px; margin-bottom: 6px; }
-.step-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 560px; }
-
-/* ─── SECTION HEADER ─────────────────────────────────────────── */
-.section-header {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 16px;
-}
-.section-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.section-line { flex: 1; height: 1px; background: var(--border); }
-
-/* ─── BIOMARKER TABLE ────────────────────────────────────────── */
-.biomarker-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-}
-.biomarker-cell {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-  transition: border-color var(--transition);
-}
-.biomarker-cell:hover { border-color: var(--border-strong); }
-.bm-name { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; letter-spacing: 0.2px; }
-.bm-range { font-size: 10px; color: var(--text-muted); margin-bottom: 8px; }
-.bm-input-row { display: flex; align-items: center; gap: 6px; }
-.bm-input-row input { flex: 1; padding: 7px 10px; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
-.bm-unit { font-size: 10px; color: var(--text-muted); white-space: nowrap; font-family: 'JetBrains Mono', monospace; }
-.bm-status-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--bg-overlay);
-  flex-shrink: 0;
-  transition: background var(--transition);
-}
-.bm-status-dot.normal { background: var(--emerald); }
-.bm-status-dot.low    { background: var(--amber); }
-.bm-status-dot.high   { background: var(--rose); }
-
-/* ─── BODY COMP CARD ─────────────────────────────────────────── */
-.body-comp-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-.metric-tile {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  text-align: center;
-  transition: all var(--transition);
-}
-.metric-tile:hover { border-color: var(--teal-border); }
-.metric-value { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-primary); }
-.metric-unit { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-.metric-label { font-size: 11px; color: var(--text-secondary); margin-top: 6px; font-weight: 500; }
-.metric-flag {
-  font-size: 10px; font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 99px;
-  display: inline-flex;
-  margin-top: 6px;
-}
-.metric-flag.alert { background: var(--amber-bg); color: var(--amber); }
-.metric-flag.ok    { background: var(--emerald-bg); color: var(--emerald); }
-.metric-flag.warn  { background: var(--rose-bg); color: var(--rose); }
-
-/* ─── ELIGIBILITY MATRIX ─────────────────────────────────────── */
-.elig-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.elig-card {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  transition: all var(--transition);
-  position: relative;
-  overflow: hidden;
-}
-.elig-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: var(--bg-overlay);
-  transition: background var(--transition);
-}
-.elig-card.eligible::before   { background: var(--emerald); }
-.elig-card.conditional::before { background: var(--amber); }
-.elig-card.not-indicated::before { background: var(--text-muted); }
-.elig-card.contraindicated::before { background: var(--rose); }
-
-.elig-card.eligible   { border-color: rgba(16,185,129,0.2); }
-.elig-card.conditional { border-color: rgba(245,158,11,0.2); }
-.elig-card.contraindicated { border-color: rgba(244,63,94,0.2); }
-
-.elig-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.elig-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.elig-indication { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.elig-status-badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 11px; font-weight: 700;
-  white-space: nowrap;
   flex-shrink: 0;
 }
-.elig-status-badge.eligible   { background: var(--emerald-bg); color: var(--emerald); }
-.elig-status-badge.conditional { background: var(--amber-bg); color: var(--amber); }
-.elig-status-badge.not-indicated { background: var(--bg-overlay); color: var(--text-muted); }
-.elig-status-badge.contraindicated { background: var(--rose-bg); color: var(--rose); }
-
-.elig-confidence {
-  margin: 8px 0;
-}
-.conf-track {
-  height: 4px;
-  background: var(--bg-overlay);
-  border-radius: 99px;
-  overflow: hidden;
-}
-.conf-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
-}
-.conf-fill.eligible   { background: var(--emerald); }
-.conf-fill.conditional { background: var(--amber); }
-.conf-fill.not-indicated { background: var(--text-muted); }
-.conf-fill.contraindicated { background: var(--rose); }
-.conf-label { font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 4px; }
-
-.elig-rationale { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
-
-/* ─── CLINICAL BRIEF ─────────────────────────────────────────── */
-.hitl-banner {
-  background: linear-gradient(135deg, rgba(244,63,94,0.1), rgba(244,63,94,0.05));
-  border: 1px solid var(--rose-border);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  display: flex; align-items: flex-start; gap: 14px;
-  margin-bottom: 24px;
-}
-.hitl-icon {
-  width: 40px; height: 40px;
-  background: var(--rose-bg);
-  border: 1px solid var(--rose-border);
-  border-radius: var(--radius);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  color: var(--rose);
-}
-.hitl-title { font-size: 13px; font-weight: 700; color: var(--rose); margin-bottom: 4px; letter-spacing: 0.2px; }
-.hitl-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-
-.brief-section { margin-bottom: 24px; }
-.brief-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-.brief-stat {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-}
-.brief-stat-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.brief-stat-value { font-size: 16px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-primary); margin-top: 4px; }
-.brief-stat-sub { font-size: 10px; color: var(--text-muted); }
-
-.flag-list { display: flex; flex-direction: column; gap: 8px; }
-.flag-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius);
-  padding: 12px;
-  border-left: 3px solid var(--border);
-}
-.flag-item.warning { border-left-color: var(--amber); background: var(--amber-bg); }
-.flag-item.danger  { border-left-color: var(--rose); background: var(--rose-bg); }
-.flag-item.info    { border-left-color: var(--teal); background: var(--teal-glow); }
-.flag-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-.flag-text strong { color: var(--text-primary); }
-
-/* ─── RECOMMENDED PATHWAY ────────────────────────────────────── */
-.pathway-card {
-  background: linear-gradient(135deg, rgba(13,148,136,0.1), rgba(79,152,163,0.05));
-  border: 1px solid var(--teal-border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-}
-.pathway-card::after {
-  content: '';
-  position: absolute;
-  top: -20px; right: -20px;
-  width: 80px; height: 80px;
-  background: radial-gradient(circle, rgba(13,148,136,0.2), transparent 70%);
-}
-.pathway-rank {
-  font-size: 10px; font-weight: 700; color: var(--teal-light);
-  text-transform: uppercase; letter-spacing: 0.8px;
+.integration-card h3 {
+  font-size: 15px;
+  font-weight: 700;
   margin-bottom: 4px;
 }
-.pathway-name { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-.pathway-rationale { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
-
-/* ─── TOAST / ALERTS ─────────────────────────────────────────── */
-.alert {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  font-size: 12px;
-  margin-bottom: 16px;
-  line-height: 1.5;
+.integration-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 8px;
 }
-.alert-info { background: var(--teal-glow); border: 1px solid var(--teal-border); color: var(--teal-light); }
-.alert-warning { background: var(--amber-bg); border: 1px solid var(--amber-border); color: var(--amber); }
-.alert-danger { background: var(--rose-bg); border: 1px solid var(--rose-border); color: var(--rose); }
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(79,152,163,0.08);
+  border: 1px solid var(--teal-border);
+  border-radius: var(--radius-sm);
+  padding: 3px 9px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--teal-light);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 
-/* ─── CHART CONTAINER ───────────────────────────────────────── */
-.chart-container { position: relative; }
+/* ─── TEAM ─────────────────────────────────────────────────── */
+.section-team { background: var(--bg-surface); }
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+.team-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.875rem 1.75rem;
+  transition: all var(--transition);
+}
+.team-card:hover {
+  border-color: var(--teal-border);
+  box-shadow: 0 4px 24px rgba(79,152,163,0.1);
+}
+.team-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal-deep) 0%, var(--teal-mid) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.04em;
+  flex-shrink: 0;
+}
+.team-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 3px;
+  letter-spacing: -0.015em;
+}
+.team-role {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal-light);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 0.875rem;
+}
+.team-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
 
-/* ─── STAGE VIEWS ───────────────────────────────────────────── */
-.stage-view { display: none; animation: fadeIn 0.25s ease; }
-.stage-view.active { display: block; }
-@keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+/* ─── CTA ──────────────────────────────────────────────────── */
+.section-cta {
+  background: var(--bg-base);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(13,148,136,0.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+.cta-content { position: relative; z-index: 1; }
+.section-cta .section-sub { margin: 0 auto 2.5rem; }
 
-/* ─── FOOTER ─────────────────────────────────────────────────── */
+/* ─── FOOTER ────────────────────────────────────────────────── */
 footer {
   background: var(--bg-surface);
   border-top: 1px solid var(--border);
-  padding: 16px 32px;
-  margin-left: var(--sidebar-w);
+  padding: 1.75rem clamp(1.25rem, 5vw, 3.5rem) 1.5rem;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.125rem;
+  padding-bottom: 1.125rem;
+  border-bottom: 1px solid var(--border);
+}
+.footer-logo {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
-.footer-left { font-size: 11px; color: var(--text-muted); }
-.footer-links { display: flex; gap: 16px; }
-.footer-links a { font-size: 11px; color: var(--text-muted); transition: color var(--transition); }
-.footer-links a:hover { color: var(--teal-light); }
-
-/* ─── MOBILE NAV ─────────────────────────────────────────────── */
-.mobile-nav {
-  display: none;
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--bg-surface);
-  border-top: 1px solid var(--border);
-  padding: 8px 0 env(safe-area-inset-bottom);
-  z-index: 200;
+.footer-logo-text {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
-.mobile-nav-items {
-  display: flex; justify-content: space-around;
+.footer-logo-text .well { color: var(--teal-light); }
+.footer-links {
+  display: flex;
+  gap: 1.25rem;
 }
-.mobile-nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 6px 12px;
-  cursor: pointer;
+.footer-links a {
+  font-size: 12px;
   color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 500;
-  border-radius: var(--radius);
   transition: color var(--transition);
 }
-.mobile-nav-item.active { color: var(--teal); }
-.mobile-nav-item svg { width: 20px; height: 20px; }
+.footer-links a:hover { color: var(--teal-light); }
+.footer-compliance {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+.footer-compliance strong { color: var(--text-secondary); font-weight: 600; }
+.footer-compliance a { color: var(--teal-light); transition: opacity var(--transition); }
+.footer-compliance a:hover { opacity: 0.8; }
 
-/* ─── UPLOAD ZONE ───────────────────────────────────────────── */
-.upload-zone {
-  border: 2px dashed var(--border-strong);
-  border-radius: var(--radius-lg);
-  padding: 32px;
-  text-align: center;
-  cursor: pointer;
-  transition: all var(--transition);
-  background: var(--bg-input);
+/* ─── REVEAL ANIMATIONS ─────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
-.upload-zone:hover {
-  border-color: var(--teal-border);
-  background: var(--teal-glow);
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
 }
-.upload-icon { color: var(--text-muted); margin: 0 auto 12px; }
-.upload-text { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
-.upload-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.3s; }
+.reveal-d4 { transition-delay: 0.4s; }
 
-/* ─── RESPONSIVE ─────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .sidebar { display: none; }
-  .main-content, footer { margin-left: 0; }
-  .mobile-nav { display: block; }
-  .content-area { padding: 20px 16px 80px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .form-grid-3 { grid-template-columns: 1fr 1fr; }
-  .body-comp-grid { grid-template-columns: repeat(2, 1fr); }
-  .elig-grid { grid-template-columns: 1fr; }
-  .biomarker-grid { grid-template-columns: 1fr 1fr; }
-  .top-bar { padding: 0 16px; }
-  footer { margin-left: 0; padding: 12px 16px; flex-direction: column; }
+/* ─── RESPONSIVE ────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
 }
-@media (max-width: 480px) {
-  .form-grid-3 { grid-template-columns: 1fr; }
-  .body-comp-grid { grid-template-columns: 1fr; }
-  .biomarker-grid { grid-template-columns: 1fr; }
-  .top-bar-right .btn:not(.btn-demo) { display: none; }
+@media (max-width: 640px) {
+  .hero-actions { flex-direction: column; width: 100%; max-width: 320px; margin-left: auto; margin-right: auto; }
+  .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+  .hero-stats { gap: 1.5rem; }
+  .m5-track::before { display: none; }
+  .footer-inner { flex-direction: column; align-items: flex-start; }
+  .footer-links { flex-wrap: wrap; gap: 0.875rem; }
 }
-
-/* ─── PRINT STYLES ─────────────────────────────────────────── */
-@media print {
-  .sidebar, .top-bar, .mobile-nav, footer, .no-print { display: none !important; }
-  .main-content { margin: 0; }
-  .content-area { padding: 20px; }
-  .card { break-inside: avoid; }
-  body { background: white; color: black; }
-  .bg-surface { background: white !important; }
-}
-
-/* ─── MISC UTILITIES ─────────────────────────────────────────── */
-.flex { display: flex; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-2 { gap: 8px; }
-.gap-3 { gap: 12px; }
-.gap-4 { gap: 16px; }
-.mb-2 { margin-bottom: 8px; }
-.mb-3 { margin-bottom: 12px; }
-.mb-4 { margin-bottom: 16px; }
-.mb-6 { margin-bottom: 24px; }
-.mt-4 { margin-top: 16px; }
-.mt-6 { margin-top: 24px; }
-.text-sm { font-size: 13px; }
-.text-xs { font-size: 11px; }
-.text-muted { color: var(--text-muted); }
-.text-teal { color: var(--teal-light); }
-.text-amber { color: var(--amber); }
-.text-rose { color: var(--rose); }
-.text-emerald { color: var(--emerald); }
-.font-mono { font-family: 'JetBrains Mono', monospace; }
-.w-full { width: 100%; }
-.divider { height: 1px; background: var(--border); margin: 20px 0; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.spinner {
-  width: 16px; height: 16px;
-  border: 2px solid var(--border-strong);
-  border-top-color: var(--teal);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<div class="app-shell">
-  <!-- ── SIDEBAR ── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="logo-lockup">
-        <!-- HydraWell SVG Logo Mark -->
-        <svg class="logo-mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="HydraWell">
-          <path d="M18 4C18 4 8 14 8 21C8 26.5228 12.4772 31 18 31C23.5228 31 28 26.5228 28 21C28 14 18 4Z" fill="none" stroke="#4f98a3" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M18 4C18 4 8 14 8 21C8 26.5228 12.4772 31 18 31" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M15 20C15 20 16 17 18 14C20 17 21 20 21 20" stroke="#4f98a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M13 23C13 25.7614 15.2386 28 18 28C20.7614 28 23 25.7614 23 23" stroke="#0d9488" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <div class="logo-text">
-          <span class="brand">Hydra<span>Well</span></span>
-          <span class="tagline">Medicine 5.0 OS</span>
-        </div>
-      </div>
-      <div class="agent-badge">
-        <span class="dot"></span>
-        Sentinel v0.1
-      </div>
+<!-- ─── NAV ─────────────────────────────────────────────────── -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="HydraWell home">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <path d="M15 2.5C15 2.5 5.5 11.5 5.5 18C5.5 23.25 9.75 27.5 15 27.5C20.25 27.5 24.5 23.25 24.5 18C24.5 11.5 15 2.5 15 2.5Z" fill="#4f98a3" opacity="0.85"/>
+        <path d="M15 8.5C15 8.5 9.5 14.5 9.5 18.5C9.5 21.54 12 24 15 24C18 24 20.5 21.54 20.5 18.5C20.5 14.5 15 8.5 15 8.5Z" fill="#0a0f1a"/>
+        <path d="M15 13C15 13 11.5 16.5 11.5 19C11.5 20.93 13.07 22.5 15 22.5C16.93 22.5 18.5 20.93 18.5 19C18.5 16.5 15 13 15 13Z" fill="#4f98a3" opacity="0.55"/>
+      </svg>
+      <span class="nav-logo-text"><span class="hydra">Hydra</span><span class="well">Well</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="/agents">Agents</a>
+      <a href="/sentinel">Sentinel</a>
+      <a href="#team">Team</a>
+      <a href="#demo" class="btn-demo">Request Demo</a>
     </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-label">Intake Stages</div>
-
-      <div class="nav-item active" id="nav-0" onclick="goToStage(0)">
-        <span class="nav-step-num" id="step-num-0">1</span>
-        <div>
-          <div class="nav-label-text">Patient Intake</div>
-          <div class="nav-sub">Personal & clinical info</div>
-        </div>
-      </div>
-
-      <div class="nav-item" id="nav-1" onclick="goToStage(1)">
-        <span class="nav-step-num" id="step-num-1">2</span>
-        <div>
-          <div class="nav-label-text">Body Composition</div>
-          <div class="nav-sub">eVolt 360 metrics</div>
-        </div>
-      </div>
-
-      <div class="nav-item" id="nav-2" onclick="goToStage(2)">
-        <span class="nav-step-num" id="step-num-2">3</span>
-        <div>
-          <div class="nav-label-text">Blood Panel</div>
-          <div class="nav-sub">Biomarker results</div>
-        </div>
-      </div>
-
-      <div class="nav-item" id="nav-3" onclick="goToStage(3)">
-        <span class="nav-step-num" id="step-num-3">4</span>
-        <div>
-          <div class="nav-label-text">Eligibility Engine</div>
-          <div class="nav-sub">AI protocol assessment</div>
-        </div>
-      </div>
-
-      <div class="nav-item" id="nav-4" onclick="goToStage(4)">
-        <span class="nav-step-num" id="step-num-4">5</span>
-        <div>
-          <div class="nav-label-text">Clinical Brief</div>
-          <div class="nav-sub">Prescriber summary</div>
-        </div>
-      </div>
-
-      <div class="nav-divider"></div>
-      <div class="nav-label">Agent Network</div>
-
-      <div class="nav-item locked">
-        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 8L8 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <div>
-          <div class="nav-label-text" style="font-size:12px">Architect</div>
-          <div class="nav-sub">Protocol generation</div>
-        </div>
-        <span style="font-size:9px;color:var(--text-muted);margin-left:auto;font-weight:600">SOON</span>
-      </div>
-      <div class="nav-item locked">
-        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7H11M5 10H8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        <div>
-          <div class="nav-label-text" style="font-size:12px">Scribe</div>
-          <div class="nav-sub">SOAP note generation</div>
-        </div>
-        <span style="font-size:9px;color:var(--text-muted);margin-left:auto;font-weight:600">SOON</span>
-      </div>
-      <div class="nav-item locked">
-        <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5V8L10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <div>
-          <div class="nav-label-text" style="font-size:12px">Compass</div>
-          <div class="nav-sub">Biomarker tracking</div>
-        </div>
-        <span style="font-size:9px;color:var(--text-muted);margin-left:auto;font-weight:600">SOON</span>
-      </div>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="compliance-note">
-        <strong>⚠ Clinical Decision Support Only</strong><br>
-        All treatment decisions require review by an AHPRA-registered prescriber. This tool does not constitute medical advice.
-      </div>
-    </div>
-  </aside>
-
-  <!-- ── MAIN ── -->
-  <div class="main-content">
-    <header class="top-bar">
-      <div class="top-bar-left">
-        <div>
-          <div class="stage-title" id="topbar-title">Stage 1 — Patient Intake</div>
-          <div class="stage-sub" id="topbar-sub">Collecting patient information</div>
-        </div>
-      </div>
-      <div class="top-bar-right">
-        <button class="btn btn-demo" onclick="loadDemoPatient()">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M3 14C3 11.2386 5.23858 9 8 9C10.7614 9 13 11.2386 13 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Load Demo Patient
-        </button>
-        <button class="btn btn-secondary btn-sm" onclick="resetAll()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8C3 5.23858 5.23858 3 8 3C9.9638 3 11.6714 4.0979 12.5355 5.75M13 8C13 10.7614 10.7614 13 8 13C6.0362 13 4.3286 11.9021 3.4645 10.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13 3.5V6H10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Reset
-        </button>
-      </div>
-    </header>
-
-    <main class="content-area">
-
-      <!-- ══════════════════════════════════════════════
-           STAGE 0 — PATIENT INTAKE
-      ══════════════════════════════════════════════ -->
-      <div class="stage-view active" id="stage-0">
-
-        <div class="step-header">
-          <div class="step-badge">
-            <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 13C2 10.2386 4.23858 8 7 8C9.76142 8 12 10.2386 12 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            Stage 1 of 5
-          </div>
-          <h1 class="step-title">Patient Intake</h1>
-          <p class="step-desc">Provide patient details, health goals, and medical history. Sentinel uses this to tailor the eligibility assessment.</p>
-        </div>
-
-        <!-- Substep nav -->
-        <div class="card mb-4">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="flex items-center gap-2" style="flex:1">
-              <div class="progress-track" style="flex:1"><div class="progress-fill" id="intake-progress" style="width:20%"></div></div>
-            </div>
-            <span class="text-xs text-muted" id="intake-progress-label">Step 1 of 5</span>
-          </div>
-          <div class="flex gap-2" style="flex-wrap:wrap">
-            <div class="chip selected" id="tab-0" onclick="showIntakeTab(0)">Personal Info</div>
-            <div class="chip" id="tab-1" onclick="showIntakeTab(1)">Health Goals</div>
-            <div class="chip" id="tab-2" onclick="showIntakeTab(2)">Medical History</div>
-            <div class="chip" id="tab-3" onclick="showIntakeTab(3)">Medications & Allergies</div>
-            <div class="chip" id="tab-4" onclick="showIntakeTab(4)">Lifestyle</div>
-          </div>
-        </div>
-
-        <!-- Tab 0: Personal Info -->
-        <div class="stage-view active" id="intake-tab-0">
-          <div class="card">
-            <div class="section-header"><span class="section-title">Personal Information</span><div class="section-line"></div></div>
-            <div class="form-grid mb-4">
-              <div class="field">
-                <label>Full Name <span class="required">*</span></label>
-                <input type="text" id="p-name" placeholder="e.g. Sarah Mitchell" oninput="updatePatient('personal','name',this.value)">
-              </div>
-              <div class="field">
-                <label>Date of Birth <span class="required">*</span></label>
-                <input type="date" id="p-dob" onchange="updateDOB(this.value)">
-              </div>
-              <div class="field">
-                <label>Sex at Birth <span class="required">*</span></label>
-                <select id="p-sex" onchange="updatePatient('personal','sex',this.value)">
-                  <option value="">Select</option>
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other / Non-binary</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Pronouns</label>
-                <select id="p-pronouns" onchange="updatePatient('personal','pronouns',this.value)">
-                  <option value="">Select</option>
-                  <option value="she/her">She/Her</option>
-                  <option value="he/him">He/Him</option>
-                  <option value="they/them">They/Them</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Height (cm) <span class="required">*</span></label>
-                <div class="input-with-unit">
-                  <input type="number" id="p-height" placeholder="168" min="100" max="250" oninput="updateHeight()">
-                  <span class="input-unit">cm</span>
-                </div>
-              </div>
-              <div class="field">
-                <label>Weight (kg) <span class="required">*</span></label>
-                <div class="input-with-unit">
-                  <input type="number" id="p-weight" placeholder="82" min="30" max="300" oninput="updateWeight()">
-                  <span class="input-unit">kg</span>
-                </div>
-              </div>
-            </div>
-            <div class="form-grid mb-4">
-              <div class="field">
-                <label>Calculated BMI</label>
-                <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:13px" id="bmi-display">— Enter height & weight</div>
-              </div>
-              <div class="field">
-                <label>BMI Category</label>
-                <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:13px" id="bmi-cat-display">—</div>
-              </div>
-            </div>
-            <div class="form-grid">
-              <div class="field">
-                <label>Email</label>
-                <input type="email" id="p-email" placeholder="patient@email.com" oninput="updatePatient('personal','email',this.value)">
-              </div>
-              <div class="field">
-                <label>Phone</label>
-                <input type="text" id="p-phone" placeholder="+61 4XX XXX XXX" oninput="updatePatient('personal','phone',this.value)">
-              </div>
-              <div class="field">
-                <label>Referral Source</label>
-                <select id="p-referral" onchange="updatePatient('personal','referral',this.value)">
-                  <option value="">Select</option>
-                  <option value="gp">GP Referral</option>
-                  <option value="self">Self-referred</option>
-                  <option value="practitioner">Wellness Practitioner</option>
-                  <option value="online">Online / Marketing</option>
-                  <option value="word_of_mouth">Word of Mouth</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Referring Practitioner</label>
-                <input type="text" id="p-referrer" placeholder="Dr / Practitioner name (if applicable)" oninput="updatePatient('personal','referrer',this.value)">
-              </div>
-            </div>
-          </div>
-          <div class="flex justify-between mt-4">
-            <div></div>
-            <button class="btn btn-primary" onclick="showIntakeTab(1)">Next: Health Goals →</button>
-          </div>
-        </div>
-
-        <!-- Tab 1: Health Goals -->
-        <div class="stage-view" id="intake-tab-1">
-          <div class="card mb-4">
-            <div class="section-header"><span class="section-title">Primary Health Goals</span><div class="section-line"></div></div>
-            <p class="text-sm text-muted mb-4">Select all that apply. This guides Sentinel's eligibility logic.</p>
-            <div class="chip-group" id="goals-chips">
-              <label class="chip"><input type="checkbox" value="weight_management" onchange="toggleGoal(this)"> Weight Management</label>
-              <label class="chip"><input type="checkbox" value="muscle_gain" onchange="toggleGoal(this)"> Muscle Gain / Recomp</label>
-              <label class="chip"><input type="checkbox" value="sleep_quality" onchange="toggleGoal(this)"> Sleep Quality</label>
-              <label class="chip"><input type="checkbox" value="injury_recovery" onchange="toggleGoal(this)"> Injury Recovery</label>
-              <label class="chip"><input type="checkbox" value="gut_health" onchange="toggleGoal(this)"> Gut Health</label>
-              <label class="chip"><input type="checkbox" value="immune_support" onchange="toggleGoal(this)"> Immune Support</label>
-              <label class="chip"><input type="checkbox" value="cognitive_performance" onchange="toggleGoal(this)"> Cognitive Performance</label>
-              <label class="chip"><input type="checkbox" value="anxiety_stress" onchange="toggleGoal(this)"> Anxiety / Stress</label>
-              <label class="chip"><input type="checkbox" value="hormone_optimisation" onchange="toggleGoal(this)"> Hormone Optimisation</label>
-              <label class="chip"><input type="checkbox" value="longevity" onchange="toggleGoal(this)"> Longevity / Anti-Ageing</label>
-              <label class="chip"><input type="checkbox" value="metabolic_health" onchange="toggleGoal(this)"> Metabolic Health</label>
-              <label class="chip"><input type="checkbox" value="energy_fatigue" onchange="toggleGoal(this)"> Energy / Fatigue</label>
-            </div>
-          </div>
-
-          <!-- Conditional: weight management -->
-          <div class="card mb-4" id="cond-weight" style="display:none">
-            <div class="section-header"><span class="section-title">Weight Management — Additional Detail</span><div class="section-line"></div></div>
-            <div class="form-grid">
-              <div class="field">
-                <label>Target weight loss (kg)</label>
-                <div class="input-with-unit"><input type="number" id="p-target-loss" placeholder="10" oninput="updatePatient('goals','targetLoss',this.value)"><span class="input-unit">kg</span></div>
-              </div>
-              <div class="field">
-                <label>Previous weight loss attempts</label>
-                <select id="p-wl-history" onchange="updatePatient('goals','weightLossHistory',this.value)">
-                  <option value="">Select</option>
-                  <option value="none">None</option>
-                  <option value="diet">Diet changes only</option>
-                  <option value="exercise">Exercise + diet</option>
-                  <option value="medication">Medication (e.g. Ozempic)</option>
-                  <option value="surgery">Bariatric surgery</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Current eating disorder / disordered eating?</label>
-                <select id="p-eating-disorder" onchange="checkEatingDisorder(this.value)">
-                  <option value="no">No</option>
-                  <option value="history">History (resolved)</option>
-                  <option value="current">Currently experiencing</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Conditional: injury recovery -->
-          <div class="card mb-4" id="cond-injury" style="display:none">
-            <div class="section-header"><span class="section-title">Injury / Recovery — Additional Detail</span><div class="section-line"></div></div>
-            <div class="form-grid">
-              <div class="field">
-                <label>Primary injury / area</label>
-                <input type="text" id="p-injury-site" placeholder="e.g. Left knee, lower back, shoulder" oninput="updatePatient('goals','injurySite',this.value)">
-              </div>
-              <div class="field">
-                <label>Injury duration</label>
-                <select id="p-injury-duration" onchange="updatePatient('goals','injuryDuration',this.value)">
-                  <option value="">Select</option>
-                  <option value="acute">Acute (&lt;6 weeks)</option>
-                  <option value="subacute">Subacute (6w–3m)</option>
-                  <option value="chronic">Chronic (&gt;3 months)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-4">
-            <div class="section-header"><span class="section-title">Current Symptoms</span><div class="section-line"></div></div>
-            <div class="field">
-              <label>Describe current symptoms (in your own words)</label>
-              <textarea id="p-symptoms" placeholder="e.g. Persistent knee pain, difficulty sleeping, low energy in the afternoons, brain fog..." oninput="updatePatient('symptoms','free_text',this.value)" rows="3"></textarea>
-            </div>
-          </div>
-
-          <div class="flex justify-between mt-4">
-            <button class="btn btn-secondary" onclick="showIntakeTab(0)">← Back</button>
-            <button class="btn btn-primary" onclick="showIntakeTab(2)">Next: Medical History →</button>
-          </div>
-        </div>
-
-        <!-- Tab 2: Medical History -->
-        <div class="stage-view" id="intake-tab-2">
-          <div class="card mb-4">
-            <div class="section-header"><span class="section-title">Medical History</span><div class="section-line"></div></div>
-            <p class="text-sm text-muted mb-4">Select any current or past conditions. Some conditions trigger hard contraindication flags.</p>
-            <div class="chip-group mb-4" id="conditions-chips">
-              <label class="chip"><input type="checkbox" value="type2_diabetes" onchange="toggleCondition(this)"> Type 2 Diabetes</label>
-              <label class="chip"><input type="checkbox" value="prediabetes" onchange="toggleCondition(this)"> Pre-diabetes</label>
-              <label class="chip"><input type="checkbox" value="hypothyroid" onchange="toggleCondition(this)"> Hypothyroidism</label>
-              <label class="chip"><input type="checkbox" value="hyperthyroid" onchange="toggleCondition(this)"> Hyperthyroidism</label>
-              <label class="chip"><input type="checkbox" value="cancer_active" onchange="checkCancerFlag(this)"> Active Cancer ⚠</label>
-              <label class="chip"><input type="checkbox" value="cancer_history" onchange="toggleCondition(this)"> Cancer (history, remission)</label>
-              <label class="chip"><input type="checkbox" value="autoimmune" onchange="toggleCondition(this)"> Autoimmune Condition</label>
-              <label class="chip"><input type="checkbox" value="cardiovascular" onchange="toggleCondition(this)"> Cardiovascular Disease</label>
-              <label class="chip"><input type="checkbox" value="liver_disease" onchange="toggleCondition(this)"> Liver Disease</label>
-              <label class="chip"><input type="checkbox" value="kidney_disease" onchange="toggleCondition(this)"> Kidney Disease / CKD</label>
-              <label class="chip"><input type="checkbox" value="ibs_ibd" onchange="toggleCondition(this)"> IBS / IBD</label>
-              <label class="chip"><input type="checkbox" value="mental_health" onchange="toggleCondition(this)"> Mental Health Condition</label>
-              <label class="chip"><input type="checkbox" value="sleep_apnoea" onchange="toggleCondition(this)"> Sleep Apnoea</label>
-              <label class="chip"><input type="checkbox" value="pcos" onchange="toggleCondition(this)"> PCOS</label>
-              <label class="chip"><input type="checkbox" value="endometriosis" onchange="toggleCondition(this)"> Endometriosis</label>
-            </div>
-
-            <div class="field mb-4">
-              <label>Other conditions / diagnoses</label>
-              <input type="text" id="p-other-conditions" placeholder="Any other diagnosed conditions..." oninput="updatePatient('medicalHistory','otherConditions',this.value)">
-            </div>
-            <div class="field mb-4">
-              <label>Previous surgeries</label>
-              <input type="text" id="p-surgeries" placeholder="e.g. Appendectomy 2018, knee arthroscopy 2022..." oninput="updatePatient('medicalHistory','surgeries',this.value)">
-            </div>
-          </div>
-
-          <div class="card mb-4">
-            <div class="section-header"><span class="section-title">Pregnancy / Reproductive Status</span><div class="section-line"></div></div>
-            <div class="form-grid">
-              <div class="field">
-                <label>Pregnant or planning pregnancy?</label>
-                <select id="p-pregnant" onchange="checkPregnancy(this.value)">
-                  <option value="no">No</option>
-                  <option value="yes_pregnant">Currently pregnant</option>
-                  <option value="yes_planning">Planning pregnancy (&lt;12 months)</option>
-                  <option value="breastfeeding">Currently breastfeeding</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Menopausal status (if applicable)</label>
-                <select id="p-menopause" onchange="updatePatient('medicalHistory','menopause',this.value)">
-                  <option value="na">N/A</option>
-                  <option value="pre">Pre-menopausal</option>
-                  <option value="peri">Peri-menopausal</option>
-                  <option value="post">Post-menopausal</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Contraindication alert -->
-          <div class="alert alert-danger" id="contraindication-alert" style="display:none">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5V8M8 10.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg>
-            <div id="contraindication-msg"></div>
-          </div>
-
-          <div class="flex justify-between mt-4">
-            <button class="btn btn-secondary" onclick="showIntakeTab(1)">← Back</button>
-            <button class="btn btn-primary" onclick="showIntakeTab(3)">Next: Medications →</button>
-          </div>
-        </div>
-
-        <!-- Tab 3: Medications & Allergies -->
-        <div class="stage-view" id="intake-tab-3">
-          <div class="card mb-4">
-            <div class="section-header"><span class="section-title">Current Medications</span><div class="section-line"></div></div>
-            <div class="field mb-4">
-              <label>List current medications (include dose and frequency)</label>
-              <textarea id="p-medications" placeholder="e.g. Metformin 500mg BD, Levothyroxine 50mcg daily, Vitamin D 5000IU daily..." oninput="updatePatient('medications','list',this.value)" rows="4"></textarea>
-            </div>
-            <div class="field">
-              <label>Previously trialled peptides or GH therapies?</label>
-              <select id="p-prev-peptides" onchange="updatePatient('medications','prevPeptides',this.value)">
-                <option value="no">No</option>
-                <option value="yes_good">Yes — good response</option>
-                <option value="yes_neutral">Yes — neutral response</option>
-                <option value="yes_adverse">Yes — adverse reaction</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="card mb-4">
-            <div class="section-header"><span class="section-title">Allergies & Adverse Reactions</span><div class="section-line"></div></div>
-            <div class="chip-group mb-4">
-              <label class="chip"><input type="checkbox" value="penicillin" onchange="toggleAllergy(this)"> Penicillin</label>
-              <label class="chip"><input type="checkbox" value="sulfa" onchange="toggleAllergy(this)"> Sulfa drugs</label>
-              <label class="chip"><input type="checkbox" value="nsaids" onchange="toggleAllergy(this)"> NSAIDs</label>
-              <label class="chip"><input type="checkbox" value="latex" onchange="toggleAllergy(this)"> Latex</label>
-              <label class="chip"><input type="checkbox" value="iodine" onchange="toggleAllergy(this)"> Iodine / Contrast</label>
-              <label class="chip"><input type="checkbox" value="none" onchange="toggleAllergy(this)"> No known allergies</label>
-            </div>
-            <div class="field">
-              <label>Other allergies or adverse drug reactions</label>
-              <input type="text" id="p-other-allergies" placeholder="e.g. Codeine (nausea), Aspirin (GI upset)..." oninput="updatePatient('allergies','other',this.value)">
-            </div>
-          </div>
-
-          <div class="flex justify-between mt-4">
-            <button class="btn btn-secondary" onclick="showIntakeTab(2)">← Back</button>
-            <button class="btn btn-primary" onclick="showIntakeTab(4)">Next: Lifestyle →</button>
-          </div>
-        </div>
-
-        <!-- Tab 4: Lifestyle -->
-        <div class="stage-view" id="intake-tab-4">
-          <div class="card mb-4">
-            <div class="section-header"><span class="section-title">Lifestyle & Physical Activity</span><div class="section-line"></div></div>
-            <div class="form-grid mb-4">
-              <div class="field">
-                <label>Exercise frequency (days/week)</label>
-                <select id="p-exercise" onchange="updatePatient('lifestyle','exerciseFreq',this.value)">
-                  <option value="0">Sedentary (0 days)</option>
-                  <option value="1-2">Light (1-2 days)</option>
-                  <option value="3-4">Moderate (3-4 days)</option>
-                  <option value="5+">Active (5+ days)</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Primary exercise type</label>
-                <select id="p-exercise-type" onchange="updatePatient('lifestyle','exerciseType',this.value)">
-                  <option value="">Select</option>
-                  <option value="resistance">Resistance training</option>
-                  <option value="cardio">Cardio / Endurance</option>
-                  <option value="mixed">Mixed</option>
-                  <option value="yoga_pilates">Yoga / Pilates</option>
-                  <option value="sport">Team sports</option>
-                  <option value="none">None</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Average sleep duration (hours/night)</label>
-                <div class="input-with-unit">
-                  <input type="number" id="p-sleep" min="2" max="12" step="0.5" placeholder="7" oninput="updatePatient('lifestyle','sleepHrs',this.value)">
-                  <span class="input-unit">hrs</span>
-                </div>
-              </div>
-              <div class="field">
-                <label>Sleep quality self-rating</label>
-                <select id="p-sleep-quality" onchange="updatePatient('lifestyle','sleepQuality',this.value)">
-                  <option value="">Select</option>
-                  <option value="poor">Poor (restless, unrefreshed)</option>
-                  <option value="fair">Fair (some issues)</option>
-                  <option value="good">Good</option>
-                  <option value="excellent">Excellent</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Stress level (self-rated)</label>
-                <select id="p-stress" onchange="updatePatient('lifestyle','stressLevel',this.value)">
-                  <option value="">Select</option>
-                  <option value="low">Low</option>
-                  <option value="moderate">Moderate</option>
-                  <option value="high">High</option>
-                  <option value="very_high">Very High / Burnout</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Alcohol consumption</label>
-                <select id="p-alcohol" onchange="updatePatient('lifestyle','alcohol',this.value)">
-                  <option value="none">None</option>
-                  <option value="low">Low (&lt;7 std/week)</option>
-                  <option value="moderate">Moderate (7-14 std/week)</option>
-                  <option value="high">High (&gt;14 std/week)</option>
-                </select>
-              </div>
-            </div>
-            <div class="field">
-              <label>Smoking / vaping status</label>
-              <div class="chip-group">
-                <label class="chip"><input type="radio" name="smoking" value="never" onchange="updatePatient('lifestyle','smoking',this.value)"> Never</label>
-                <label class="chip"><input type="radio" name="smoking" value="ex" onchange="updatePatient('lifestyle','smoking',this.value)"> Ex-smoker</label>
-                <label class="chip"><input type="radio" name="smoking" value="current" onchange="updatePatient('lifestyle','smoking',this.value)"> Current smoker</label>
-                <label class="chip"><input type="radio" name="smoking" value="vaping" onchange="updatePatient('lifestyle','smoking',this.value)"> Vaping</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex justify-between mt-4">
-            <button class="btn btn-secondary" onclick="showIntakeTab(3)">← Back</button>
-            <button class="btn btn-primary" onclick="completeIntake()">Complete Intake → Stage 2</button>
-          </div>
-        </div>
-
-      </div><!-- /stage-0 -->
-
-
-      <!-- ══════════════════════════════════════════════
-           STAGE 1 — BODY COMPOSITION
-      ══════════════════════════════════════════════ -->
-      <div class="stage-view" id="stage-1">
-        <div class="step-header">
-          <div class="step-badge">
-            <svg viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 7H9M7 5V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            Stage 2 of 5
-          </div>
-          <h1 class="step-title">Body Composition — eVolt 360</h1>
-          <p class="step-desc">Enter eVolt 360 scan data or upload a report. Sentinel maps these metrics to peptide candidacy signals.</p>
-        </div>
-
-        <div class="alert alert-info mb-4">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 6V10M7 4.5V5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <span>No eVolt data yet? Enter available metrics below and leave unknowns blank. Sentinel will flag missing data in the eligibility assessment.</span>
-        </div>
-
-        <!-- Manual entry -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <div><div class="card-title">eVolt 360 Metrics — Manual Entry</div><div class="card-sub">Enter values from your eVolt scan report</div></div>
-            <div class="card-icon">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="3" stroke="#4f98a3" stroke-width="1.5"/><path d="M6 9H12M9 6V12" stroke="#4f98a3" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </div>
-          </div>
-          <div class="form-grid-3 mb-4">
-            <div class="field">
-              <label>Body Fat %</label>
-              <div class="input-with-unit">
-                <input type="number" id="bc-bf" placeholder="34.2" step="0.1" min="1" max="80" oninput="updateBodyComp('bodyFatPercent',this.value)">
-                <span class="input-unit">%</span>
-              </div>
-              <span class="field-hint">Optimal: M &lt;20% / F &lt;28%</span>
-            </div>
-            <div class="field">
-              <label>Lean Muscle Mass</label>
-              <div class="input-with-unit">
-                <input type="number" id="bc-lmm" placeholder="50.8" step="0.1" min="10" max="120" oninput="updateBodyComp('leanMuscleMass',this.value)">
-                <span class="input-unit">kg</span>
-              </div>
-            </div>
-            <div class="field">
-              <label>Visceral Fat Rating</label>
-              <input type="number" id="bc-vf" placeholder="14" step="1" min="1" max="30" oninput="updateBodyComp('visceralFatRating',this.value)">
-              <span class="field-hint">Optimal: 1–9 | High: ≥13</span>
-            </div>
-            <div class="field">
-              <label>Skeletal Muscle Mass</label>
-              <div class="input-with-unit">
-                <input type="number" id="bc-smm" placeholder="21.3" step="0.1" min="5" max="80" oninput="updateBodyComp('skeletalMuscleMass',this.value)">
-                <span class="input-unit">kg</span>
-              </div>
-            </div>
-            <div class="field">
-              <label>Total Body Water %</label>
-              <div class="input-with-unit">
-                <input type="number" id="bc-tbw" placeholder="48.2" step="0.1" min="20" max="80" oninput="updateBodyComp('totalBodyWater',this.value)">
-                <span class="input-unit">%</span>
-              </div>
-              <span class="field-hint">Optimal: 50–65%</span>
-            </div>
-            <div class="field">
-              <label>Bone Mineral Content</label>
-              <div class="input-with-unit">
-                <input type="number" id="bc-bmc" placeholder="2.4" step="0.1" min="0.5" max="6" oninput="updateBodyComp('boneMineralContent',this.value)">
-                <span class="input-unit">kg</span>
-              </div>
-            </div>
-          </div>
-          <div class="form-grid">
-            <div class="field">
-              <label>Scan Date</label>
-              <input type="date" id="bc-date" onchange="updateBodyComp('scanDate',this.value)">
-            </div>
-            <div class="field">
-              <label>eVolt Site / Practitioner</label>
-              <input type="text" id="bc-site" placeholder="e.g. Gold Coast eVolt Studio" oninput="updateBodyComp('scanSite',this.value)">
-            </div>
-          </div>
-        </div>
-
-        <!-- Upload zone -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <div><div class="card-title">Upload eVolt Report</div><div class="card-sub">CSV or PDF accepted — auto-parses key metrics where possible</div></div>
-          </div>
-          <div class="upload-zone" onclick="document.getElementById('evolt-upload').click()">
-            <svg class="upload-icon" width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M16 22V10M16 10L12 14M16 10L20 14" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 26H24C25.1046 26 26 25.1046 26 24V18" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <div class="upload-text">Click to upload or drag & drop</div>
-            <div class="upload-hint">eVolt 360 PDF report or CSV export</div>
-          </div>
-          <input type="file" id="evolt-upload" accept=".pdf,.csv" style="display:none" onchange="handleEvoltUpload(this)">
-          <div id="evolt-upload-status" style="display:none" class="alert alert-info mt-3"></div>
-        </div>
-
-        <!-- Body comp summary (populated after entry) -->
-        <div class="card mb-4" id="bc-summary" style="display:none">
-          <div class="card-header">
-            <div><div class="card-title">Body Composition Summary</div><div class="card-sub">Peptide candidacy signals detected</div></div>
-          </div>
-          <div class="body-comp-grid" id="bc-tiles"></div>
-          <div id="bc-signals"></div>
-        </div>
-
-        <!-- Chart -->
-        <div class="card mb-4" id="bc-chart-card" style="display:none">
-          <div class="card-header"><div class="card-title">Body Composition Profile</div></div>
-          <div class="chart-container" style="height:280px">
-            <canvas id="bcChart"></canvas>
-          </div>
-        </div>
-
-        <div class="flex justify-between mt-4">
-          <button class="btn btn-secondary" onclick="goToStage(0)">← Stage 1</button>
-          <button class="btn btn-primary" onclick="goToStage(2)">Next: Blood Panel →</button>
-        </div>
-      </div><!-- /stage-1 -->
-
-
-      <!-- ══════════════════════════════════════════════
-           STAGE 2 — BLOOD PANEL
-      ══════════════════════════════════════════════ -->
-      <div class="stage-view" id="stage-2">
-        <div class="step-header">
-          <div class="step-badge">
-            <svg viewBox="0 0 14 14" fill="none"><path d="M7 2V9L10 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/></svg>
-            Stage 3 of 5
-          </div>
-          <h1 class="step-title">Blood Panel — Bloody Good Tests</h1>
-          <p class="step-desc">Enter biomarker results from the 100-biomarker panel. Out-of-range values are auto-flagged. No results yet? Sentinel will generate a recommended pathology request list.</p>
-        </div>
-
-        <div class="alert alert-info mb-4">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 6V10M7 4.5V5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <span>Reference ranges shown below each field. Values flagged <span style="color:var(--amber)">amber</span> (borderline) or <span style="color:var(--rose)">red</span> (out-of-range) contribute to eligibility scoring.</span>
-        </div>
-
-        <!-- Hormonal -->
-        <div class="card mb-4">
-          <div class="section-header"><span class="section-title">Hormonal Panel</span><div class="section-line"></div></div>
-          <div class="biomarker-grid" id="bm-hormonal"></div>
-        </div>
-
-        <!-- Inflammatory -->
-        <div class="card mb-4">
-          <div class="section-header"><span class="section-title">Inflammatory Markers</span><div class="section-line"></div></div>
-          <div class="biomarker-grid" id="bm-inflammatory"></div>
-        </div>
-
-        <!-- Metabolic -->
-        <div class="card mb-4">
-          <div class="section-header"><span class="section-title">Metabolic Panel</span><div class="section-line"></div></div>
-          <div class="biomarker-grid" id="bm-metabolic"></div>
-        </div>
-
-        <!-- Organ Function -->
-        <div class="card mb-4">
-          <div class="section-header"><span class="section-title">Organ Function</span><div class="section-line"></div></div>
-          <div class="biomarker-grid" id="bm-organ"></div>
-        </div>
-
-        <!-- Vitamins / Minerals -->
-        <div class="card mb-4">
-          <div class="section-header"><span class="section-title">Vitamins & Minerals</span><div class="section-line"></div></div>
-          <div class="biomarker-grid" id="bm-vitamins"></div>
-        </div>
-
-        <!-- No bloods toggle -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <div><div class="card-title">No Blood Results Available</div><div class="card-sub">Sentinel will generate a recommended pathology request</div></div>
-            <button class="btn btn-secondary btn-sm" onclick="generatePathologyRequest()">Generate Pathology Request</button>
-          </div>
-          <div id="path-request" style="display:none"></div>
-        </div>
-
-        <div class="flex justify-between mt-4">
-          <button class="btn btn-secondary" onclick="goToStage(1)">← Body Composition</button>
-          <button class="btn btn-primary" onclick="runEligibilityEngine()">Run Eligibility Engine →</button>
-        </div>
-      </div><!-- /stage-2 -->
-
-
-      <!-- ══════════════════════════════════════════════
-           STAGE 3 — ELIGIBILITY ENGINE
-      ══════════════════════════════════════════════ -->
-      <div class="stage-view" id="stage-3">
-        <div class="step-header">
-          <div class="step-badge">
-            <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L8.5 5H13L9.5 7.5L11 11.5L7 9L3 11.5L4.5 7.5L1 5H5.5L7 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            Stage 4 of 5
-          </div>
-          <h1 class="step-title">Eligibility Engine</h1>
-          <p class="step-desc">Cross-referencing all patient data against 8 peptide protocol pathways. Deterministic rule-based assessment with confidence scoring.</p>
-        </div>
-
-        <!-- Engine status -->
-        <div class="card mb-4" id="engine-status-card">
-          <div class="flex items-center gap-3 mb-4">
-            <div id="engine-spinner" class="spinner"></div>
-            <div>
-              <div class="card-title" id="engine-status-title">Running Sentinel Eligibility Engine...</div>
-              <div class="card-sub" id="engine-status-sub">Analysing patient profile</div>
-            </div>
-          </div>
-          <div class="progress-track"><div class="progress-fill" id="engine-progress" style="width:0%"></div></div>
-        </div>
-
-        <!-- Contraindication alerts -->
-        <div id="contra-alerts"></div>
-
-        <!-- Eligibility grid -->
-        <div id="elig-grid-container" style="display:none">
-          <div class="section-header mb-4"><span class="section-title">Protocol Assessment — 8 Pathways</span><div class="section-line"></div></div>
-          <div class="elig-grid" id="elig-grid"></div>
-        </div>
-
-        <!-- Chart -->
-        <div class="card mt-4" id="elig-chart-card" style="display:none">
-          <div class="card-header"><div class="card-title">Confidence Scores Overview</div></div>
-          <div class="chart-container" style="height:300px">
-            <canvas id="eligChart"></canvas>
-          </div>
-        </div>
-
-        <div class="flex justify-between mt-4">
-          <button class="btn btn-secondary" onclick="goToStage(2)">← Blood Panel</button>
-          <button class="btn btn-primary" id="brief-btn" onclick="generateClinicalBrief()" disabled>Generate Clinical Brief →</button>
-        </div>
-      </div><!-- /stage-3 -->
-
-
-      <!-- ══════════════════════════════════════════════
-           STAGE 4 — CLINICAL BRIEF
-      ══════════════════════════════════════════════ -->
-      <div class="stage-view" id="stage-4">
-        <div class="step-header">
-          <div class="step-badge">
-            <svg viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5H9M5 7.5H9M5 10H7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-            Stage 5 of 5 — Complete
-          </div>
-          <h1 class="step-title">Clinical Brief</h1>
-          <p class="step-desc">Consultation-ready prescriber summary. Review before the patient consult.</p>
-        </div>
-
-        <!-- HITL Banner -->
-        <div class="hitl-banner">
-          <div class="hitl-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4V10M10 13.5V14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/></svg>
-          </div>
-          <div>
-            <div class="hitl-title">⚕ PRESCRIBER APPROVAL REQUIRED — HITL GATE ACTIVE</div>
-            <div class="hitl-text">Sentinel provides clinical decision support only. All treatment decisions require review and approval by an AHPRA-registered prescriber. This output does not constitute medical advice, diagnosis, or treatment. Peptide therapies require a valid prescription from a TGA Authorised Prescriber.</div>
-          </div>
-        </div>
-
-        <!-- Patient Snapshot -->
-        <div class="card mb-4" id="brief-patient-snapshot">
-          <div class="card-header">
-            <div><div class="card-title">Patient Snapshot</div><div class="card-sub" id="brief-date-generated"></div></div>
-            <div class="flex gap-2 no-print">
-              <button class="btn btn-secondary btn-sm" onclick="window.print()">
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="5" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="4" y="10" width="8" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
-                Print / PDF
-              </button>
-            </div>
-          </div>
-          <div class="brief-grid" id="brief-stats"></div>
-        </div>
-
-        <!-- Body Comp Summary -->
-        <div class="card mb-4" id="brief-body-comp">
-          <div class="card-header"><div class="card-title">Body Composition Summary — eVolt 360</div></div>
-          <div id="brief-bc-content"></div>
-        </div>
-
-        <!-- Blood Panel Summary -->
-        <div class="card mb-4" id="brief-blood-panel">
-          <div class="card-header"><div class="card-title">Blood Panel — Flagged Values</div></div>
-          <div id="brief-bp-content"></div>
-        </div>
-
-        <!-- Eligibility Matrix -->
-        <div class="card mb-4">
-          <div class="card-header"><div class="card-title">Eligibility Matrix — 8 Protocol Pathways</div></div>
-          <div class="elig-grid" id="brief-elig-grid"></div>
-        </div>
-
-        <!-- Recommended Pathway -->
-        <div class="card mb-4">
-          <div class="card-header"><div class="card-title">Recommended Primary Pathway</div></div>
-          <div id="brief-pathway"></div>
-        </div>
-
-        <!-- Risk Flags -->
-        <div class="card mb-4">
-          <div class="card-header"><div class="card-title">Risk Flags & Clinical Cautions</div></div>
-          <div class="flag-list" id="brief-flags"></div>
-        </div>
-
-        <!-- Compliance footer -->
-        <div class="card" style="background:var(--bg-elevated)">
-          <div style="font-size:11px;color:var(--text-muted);line-height:1.7">
-            <strong style="color:var(--text-secondary)">Regulatory Notice:</strong> This clinical decision support output was generated by Sentinel (HydraWell Medicine 5.0 OS, v0.1). It is intended solely as a support tool for AHPRA-registered prescribers and does not replace clinical judgment. Peptide prescription is subject to TGA Authorised Prescriber requirements. All patient data is handled in-session only and is not stored or transmitted. Refer to the <a href="#" style="color:var(--teal-light)">HydraWell Privacy Policy</a> and <a href="#" style="color:var(--teal-light)">AHPRA Compliance Framework</a> for full terms.
-            <br><br>
-            <strong style="color:var(--text-secondary)">Generated by:</strong> Sentinel — AI Patient Intake & Eligibility Router | HydraWell Medicine 5.0 OS<br>
-            <strong style="color:var(--text-secondary)">For review by:</strong> AHPRA-registered prescriber only
-          </div>
-        </div>
-
-        <div class="flex justify-between mt-4">
-          <button class="btn btn-secondary" onclick="goToStage(3)">← Eligibility Engine</button>
-          <button class="btn btn-primary" onclick="window.print()">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="5" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="4" y="10" width="8" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
-            Export PDF
-          </button>
-        </div>
-      </div><!-- /stage-4 -->
-
-    </main>
-
-    <footer>
-      <div class="footer-left">
-        © 2026 HydraWell — Medicine 5.0 Operating System &nbsp;·&nbsp; Powered by Sentinel v0.1 — AI Patient Intake & Eligibility Router
-      </div>
-      <div class="footer-links">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">AHPRA Compliance</a>
-      </div>
-    </footer>
-  </div><!-- /main-content -->
-</div><!-- /app-shell -->
-
-<!-- Mobile Nav -->
-<nav class="mobile-nav">
-  <div class="mobile-nav-items">
-    <div class="mobile-nav-item active" id="mob-nav-0" onclick="goToStage(0)">
-      <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M4 17C4 14.2386 6.68629 12 10 12C13.3137 12 16 14.2386 16 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      Intake
-    </div>
-    <div class="mobile-nav-item" id="mob-nav-1" onclick="goToStage(1)">
-      <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 10H13M10 7V13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-      Body
-    </div>
-    <div class="mobile-nav-item" id="mob-nav-2" onclick="goToStage(2)">
-      <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 7V10L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      Bloods
-    </div>
-    <div class="mobile-nav-item" id="mob-nav-3" onclick="goToStage(3)">
-      <svg viewBox="0 0 20 20" fill="none"><path d="M10 2L12 7H18L13 11L15 16L10 13L5 16L7 11L2 7H8L10 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-      Engine
-    </div>
-    <div class="mobile-nav-item" id="mob-nav-4" onclick="goToStage(4)">
-      <svg viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="12" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7H13M7 10H13M7 13H10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-      Brief
-    </div>
+    <button class="nav-hamburger" id="hamburgerBtn" aria-label="Open navigation menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
   </div>
 </nav>
+<div class="mobile-menu" id="mobileMenu" role="navigation">
+  <a href="/agents">Agents</a>
+  <a href="/sentinel">Sentinel</a>
+  <a href="#team">Team</a>
+  <a href="#demo">Request Demo</a>
+</div>
 
-<script>
-// ══════════════════════════════════════════════════════════
-// HYDRAWELL SENTINEL — CORE APPLICATION
-// v0.1 — Client-side deterministic eligibility engine
-// ══════════════════════════════════════════════════════════
-
-// ─── STATE ────────────────────────────────────────────────
-let currentStage = 0;
-let currentIntakeTab = 0;
-let bcChartInstance = null;
-let eligChartInstance = null;
-let engineRunComplete = false;
-
-const patientProfile = {
-  personal: { name:'', age:null, sex:'', height:null, weight:null, bmi:null, email:'', phone:'', referral:'', referrer:'', pronouns:'' },
-  goals: [],
-  goalDetails: {},
-  symptoms: { free_text:'' },
-  medicalHistory: { conditions:[], otherConditions:'', surgeries:'', menopause:'na', pregnant:'no' },
-  medications: { list:'', prevPeptides:'no' },
-  allergies: { list:[], other:'' },
-  lifestyle: { exerciseFreq:'0', exerciseType:'', sleepHrs:null, sleepQuality:'', stressLevel:'', alcohol:'none', smoking:'never' },
-  bodyComposition: { bodyFatPercent:null, leanMuscleMass:null, visceralFatRating:null, skeletalMuscleMass:null, totalBodyWater:null, boneMineralContent:null, scanDate:null, scanSite:'' },
-  bloodPanel: {
-    hormonal: { igf1:null, testosteroneTotal:null, testosteroneFree:null, dheas:null, cortisol:null, tsh:null, ft3:null, ft4:null },
-    inflammatory: { crp:null, esr:null, homocysteine:null, ferritin:null },
-    metabolic: { hba1c:null, fastingGlucose:null, fastingInsulin:null, totalCholesterol:null, ldl:null, hdl:null, triglycerides:null },
-    organFunction: { alt:null, ast:null, ggt:null, creatinine:null, egfr:null, urea:null },
-    vitamins: { vitaminD:null, b12:null, folate:null, iron:null, zinc:null, magnesium:null }
-  },
-  eligibility: {
-    protocols: {
-      cjc1295_ipamorelin: { status:null, confidence:0, rationale:'' },
-      bpc157:            { status:null, confidence:0, rationale:'' },
-      thymosinAlpha1:    { status:null, confidence:0, rationale:'' },
-      glp1:              { status:null, confidence:0, rationale:'' },
-      aod9604:           { status:null, confidence:0, rationale:'' },
-      dsip:              { status:null, confidence:0, rationale:'' },
-      selank:            { status:null, confidence:0, rationale:'' },
-      semax:             { status:null, confidence:0, rationale:'' }
-    },
-    contraindications: [],
-    recommendedPathway: [],
-    riskFlags: []
-  }
-};
-
-// ─── BIOMARKER DEFINITIONS ────────────────────────────────
-const BIOMARKERS = {
-  hormonal: [
-    { id:'igf1', name:'IGF-1', unit:'ng/mL', range:[100,300], low:100, high:300, display:'100–300 ng/mL' },
-    { id:'testosteroneTotal', name:'Testosterone (Total)', unit:'nmol/L', range:[8,30], low:8, high:30, display:'8–30 nmol/L (M)', altRange:'0.5–2.6 nmol/L (F)' },
-    { id:'testosteroneFree', name:'Testosterone (Free)', unit:'pmol/L', range:[170,670], low:170, high:670, display:'170–670 pmol/L (M)' },
-    { id:'dheas', name:'DHEA-S', unit:'μmol/L', range:[2,10], low:2, high:10, display:'2–10 μmol/L' },
-    { id:'cortisol', name:'Cortisol (AM)', unit:'nmol/L', range:[170,540], low:170, high:600, display:'170–540 nmol/L (AM)' },
-    { id:'tsh', name:'TSH', unit:'mIU/L', range:[0.4,4.0], low:0.4, high:4.0, display:'0.4–4.0 mIU/L' },
-    { id:'ft3', name:'Free T3 (fT3)', unit:'pmol/L', range:[3.5,6.5], low:3.5, high:6.5, display:'3.5–6.5 pmol/L' },
-    { id:'ft4', name:'Free T4 (fT4)', unit:'pmol/L', range:[10,20], low:10, high:20, display:'10–20 pmol/L' }
-  ],
-  inflammatory: [
-    { id:'crp', name:'hs-CRP', unit:'mg/L', range:[0,3], low:0, high:3, display:'<3 mg/L optimal' },
-    { id:'esr', name:'ESR', unit:'mm/hr', range:[0,20], low:0, high:20, display:'<20 mm/hr' },
-    { id:'homocysteine', name:'Homocysteine', unit:'μmol/L', range:[0,12], low:0, high:12, display:'<12 μmol/L' },
-    { id:'ferritin', name:'Ferritin', unit:'μg/L', range:[30,300], low:30, high:300, display:'30–300 μg/L' }
-  ],
-  metabolic: [
-    { id:'hba1c', name:'HbA1c', unit:'%', range:[0,5.6], low:0, high:5.6, display:'<5.7% optimal' },
-    { id:'fastingGlucose', name:'Fasting Glucose', unit:'mmol/L', range:[3.9,5.5], low:3.9, high:5.5, display:'3.9–5.5 mmol/L' },
-    { id:'fastingInsulin', name:'Fasting Insulin', unit:'mIU/L', range:[2,10], low:2, high:10, display:'2–10 mIU/L' },
-    { id:'totalCholesterol', name:'Total Cholesterol', unit:'mmol/L', range:[0,5.5], low:0, high:5.5, display:'<5.5 mmol/L' },
-    { id:'ldl', name:'LDL', unit:'mmol/L', range:[0,3.4], low:0, high:3.4, display:'<3.4 mmol/L' },
-    { id:'hdl', name:'HDL', unit:'mmol/L', range:[1.0,99], low:1.0, high:99, display:'>1.0 mmol/L' },
-    { id:'triglycerides', name:'Triglycerides', unit:'mmol/L', range:[0,1.7], low:0, high:1.7, display:'<1.7 mmol/L' }
-  ],
-  organFunction: [
-    { id:'alt', name:'ALT', unit:'U/L', range:[0,35], low:0, high:35, display:'<35 U/L' },
-    { id:'ast', name:'AST', unit:'U/L', range:[0,35], low:0, high:35, display:'<35 U/L' },
-    { id:'ggt', name:'GGT', unit:'U/L', range:[0,45], low:0, high:45, display:'<45 U/L' },
-    { id:'creatinine', name:'Creatinine', unit:'μmol/L', range:[60,110], low:60, high:110, display:'60–110 μmol/L' },
-    { id:'egfr', name:'eGFR', unit:'mL/min/1.73m²', range:[60,999], low:60, high:999, display:'>60 mL/min/1.73m²' },
-    { id:'urea', name:'Urea', unit:'mmol/L', range:[2.7,8.0], low:2.7, high:8.0, display:'2.7–8.0 mmol/L' }
-  ],
-  vitamins: [
-    { id:'vitaminD', name:'Vitamin D (25-OH)', unit:'nmol/L', range:[75,200], low:75, high:200, display:'75–200 nmol/L optimal' },
-    { id:'b12', name:'Vitamin B12', unit:'pmol/L', range:[150,700], low:150, high:700, display:'150–700 pmol/L' },
-    { id:'folate', name:'Folate (serum)', unit:'nmol/L', range:[7,45], low:7, high:45, display:'7–45 nmol/L' },
-    { id:'iron', name:'Iron (serum)', unit:'μmol/L', range:[10,30], low:10, high:30, display:'10–30 μmol/L' },
-    { id:'zinc', name:'Zinc', unit:'μmol/L', range:[11,22], low:11, high:22, display:'11–22 μmol/L' },
-    { id:'magnesium', name:'Magnesium', unit:'mmol/L', range:[0.7,1.0], low:0.7, high:1.0, display:'0.7–1.0 mmol/L' }
-  ]
-};
-
-// ─── PROTOCOL META ────────────────────────────────────────
-const PROTOCOLS = {
-  cjc1295_ipamorelin: {
-    label: 'CJC-1295 / Ipamorelin',
-    indication: 'GH optimisation · Sarcopenia · Recovery',
-    color: 'teal'
-  },
-  bpc157: {
-    label: 'BPC-157',
-    indication: 'Gut healing · Pain recovery · Inflammation',
-    color: 'teal'
-  },
-  thymosinAlpha1: {
-    label: 'Thymosin Alpha-1',
-    indication: 'Immune modulation · Chronic illness',
-    color: 'violet'
-  },
-  glp1: {
-    label: 'GLP-1 (Semaglutide)',
-    indication: 'Weight management · Metabolic health',
-    color: 'amber'
-  },
-  aod9604: {
-    label: 'AOD-9604',
-    indication: 'Fat metabolism · Body recomposition',
-    color: 'amber'
-  },
-  dsip: {
-    label: 'DSIP (Delta Sleep)',
-    indication: 'Sleep optimisation · Insomnia',
-    color: 'blue'
-  },
-  selank: {
-    label: 'Selank',
-    indication: 'Anxiety · Cognitive performance',
-    color: 'violet'
-  },
-  semax: {
-    label: 'Semax',
-    indication: 'Cognitive enhancement · Neuroprotection',
-    color: 'violet'
-  }
-};
-
-// ─── NAVIGATION ───────────────────────────────────────────
-function goToStage(n) {
-  document.querySelectorAll('.stage-view').forEach((el,i) => {
-    if (el.id.startsWith('stage-')) el.classList.remove('active');
-  });
-  document.getElementById('stage-' + n).classList.add('active');
-  currentStage = n;
-
-  // Sidebar
-  document.querySelectorAll('.nav-item[id^="nav-"]').forEach(el => el.classList.remove('active'));
-  const navEl = document.getElementById('nav-' + n);
-  if (navEl) navEl.classList.add('active');
-
-  // Mobile nav
-  document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
-  const mobEl = document.getElementById('mob-nav-' + n);
-  if (mobEl) mobEl.classList.add('active');
-
-  const titles = [
-    ['Stage 1 — Patient Intake', 'Collecting patient information'],
-    ['Stage 2 — Body Composition', 'eVolt 360 scan data'],
-    ['Stage 3 — Blood Panel', 'Biomarker results entry'],
-    ['Stage 4 — Eligibility Engine', 'AI protocol assessment'],
-    ['Stage 5 — Clinical Brief', 'Consultation-ready prescriber summary']
-  ];
-  document.getElementById('topbar-title').textContent = titles[n][0];
-  document.getElementById('topbar-sub').textContent = titles[n][1];
-
-  window.scrollTo(0,0);
-}
-
-function showIntakeTab(n) {
-  document.querySelectorAll('[id^="intake-tab-"]').forEach(el => el.classList.remove('active'));
-  document.getElementById('intake-tab-' + n).classList.add('active');
-  currentIntakeTab = n;
-
-  document.querySelectorAll('.chip[id^="tab-"]').forEach((el,i) => {
-    el.classList.toggle('selected', i === n);
-  });
-
-  const pct = Math.round(((n + 1) / 5) * 100);
-  document.getElementById('intake-progress').style.width = pct + '%';
-  document.getElementById('intake-progress-label').textContent = 'Step ' + (n+1) + ' of 5';
-}
-
-// ─── PATIENT DATA UPDATES ─────────────────────────────────
-function updatePatient(section, field, value) {
-  if (!patientProfile[section]) patientProfile[section] = {};
-  patientProfile[section][field] = value;
-}
-
-function updateDOB(val) {
-  if (!val) return;
-  const dob = new Date(val);
-  const today = new Date();
-  const age = Math.floor((today - dob) / (365.25 * 24 * 60 * 60 * 1000));
-  patientProfile.personal.age = age;
-  patientProfile.personal.dob = val;
-}
-
-function updateHeight() {
-  const h = parseFloat(document.getElementById('p-height').value);
-  patientProfile.personal.height = h || null;
-  computeBMI();
-}
-
-function updateWeight() {
-  const w = parseFloat(document.getElementById('p-weight').value);
-  patientProfile.personal.weight = w || null;
-  computeBMI();
-}
-
-function computeBMI() {
-  const h = patientProfile.personal.height;
-  const w = patientProfile.personal.weight;
-  if (h && w && h > 50) {
-    const bmi = w / Math.pow(h/100, 2);
-    patientProfile.personal.bmi = parseFloat(bmi.toFixed(1));
-    document.getElementById('bmi-display').textContent = bmi.toFixed(1);
-    let cat = '', col = 'var(--emerald)';
-    if (bmi < 18.5) { cat = 'Underweight'; col = 'var(--amber)'; }
-    else if (bmi < 25) { cat = 'Healthy Weight'; col = 'var(--emerald)'; }
-    else if (bmi < 30) { cat = 'Overweight'; col = 'var(--amber)'; }
-    else { cat = 'Obese'; col = 'var(--rose)'; }
-    const catEl = document.getElementById('bmi-cat-display');
-    catEl.textContent = cat;
-    catEl.style.color = col;
-  } else {
-    document.getElementById('bmi-display').textContent = '— Enter height & weight';
-    document.getElementById('bmi-cat-display').textContent = '—';
-    document.getElementById('bmi-cat-display').style.color = '';
-  }
-}
-
-function toggleGoal(cb) {
-  cb.parentElement.classList.toggle('selected', cb.checked);
-  if (cb.checked) {
-    if (!patientProfile.goals.includes(cb.value)) patientProfile.goals.push(cb.value);
-  } else {
-    patientProfile.goals = patientProfile.goals.filter(g => g !== cb.value);
-  }
-  // Conditional sections
-  document.getElementById('cond-weight').style.display = patientProfile.goals.includes('weight_management') ? 'block' : 'none';
-  document.getElementById('cond-injury').style.display = patientProfile.goals.includes('injury_recovery') ? 'block' : 'none';
-}
-
-function toggleCondition(cb) {
-  cb.parentElement.classList.toggle('selected', cb.checked);
-  if (cb.checked) {
-    if (!patientProfile.medicalHistory.conditions.includes(cb.value))
-      patientProfile.medicalHistory.conditions.push(cb.value);
-  } else {
-    patientProfile.medicalHistory.conditions = patientProfile.medicalHistory.conditions.filter(c => c !== cb.value);
-  }
-}
-
-function checkCancerFlag(cb) {
-  cb.parentElement.classList.toggle('selected', cb.checked);
-  toggleCondition(cb);
-  if (cb.checked) {
-    if (!patientProfile.eligibility.contraindications.includes('active_cancer'))
-      patientProfile.eligibility.contraindications.push('active_cancer');
-    showContraAlert('🚫 Active malignancy detected — GH secretagogues (CJC-1295/Ipamorelin) are CONTRAINDICATED. All peptide therapies require prescriber review.');
-  } else {
-    patientProfile.eligibility.contraindications = patientProfile.eligibility.contraindications.filter(c => c !== 'active_cancer');
-    updateContraAlert();
-  }
-}
-
-function checkPregnancy(val) {
-  patientProfile.medicalHistory.pregnant = val;
-  if (val === 'yes_pregnant' || val === 'breastfeeding') {
-    if (!patientProfile.eligibility.contraindications.includes('pregnancy'))
-      patientProfile.eligibility.contraindications.push('pregnancy');
-    showContraAlert('🚫 ' + (val === 'yes_pregnant' ? 'Pregnancy' : 'Breastfeeding') + ' detected — ALL peptide therapies are CONTRAINDICATED. No peptide protocols indicated at this time.');
-  } else {
-    patientProfile.eligibility.contraindications = patientProfile.eligibility.contraindications.filter(c => c !== 'pregnancy');
-    updateContraAlert();
-  }
-}
-
-function checkEatingDisorder(val) {
-  patientProfile.goalDetails.eatingDisorder = val;
-  if (val === 'current') {
-    if (!patientProfile.eligibility.contraindications.includes('eating_disorder'))
-      patientProfile.eligibility.contraindications.push('eating_disorder');
-  } else {
-    patientProfile.eligibility.contraindications = patientProfile.eligibility.contraindications.filter(c => c !== 'eating_disorder');
-  }
-}
-
-function showContraAlert(msg) {
-  const el = document.getElementById('contraindication-alert');
-  el.style.display = 'flex';
-  document.getElementById('contraindication-msg').innerHTML = '<strong>Contraindication Detected:</strong> ' + msg;
-}
-
-function updateContraAlert() {
-  if (patientProfile.eligibility.contraindications.length === 0) {
-    document.getElementById('contraindication-alert').style.display = 'none';
-  }
-}
-
-function toggleAllergy(cb) {
-  cb.parentElement.classList.toggle('selected', cb.checked);
-  if (cb.checked) {
-    if (!patientProfile.allergies.list.includes(cb.value))
-      patientProfile.allergies.list.push(cb.value);
-  } else {
-    patientProfile.allergies.list = patientProfile.allergies.list.filter(a => a !== cb.value);
-  }
-}
-
-// ─── BODY COMPOSITION ─────────────────────────────────────
-function updateBodyComp(field, value) {
-  const v = parseFloat(value);
-  patientProfile.bodyComposition[field] = isNaN(v) ? value : v;
-  renderBodyCompSummary();
-}
-
-function renderBodyCompSummary() {
-  const bc = patientProfile.bodyComposition;
-  const hasData = Object.values(bc).some(v => v !== null && v !== '' && v !== undefined);
-  if (!hasData) return;
-
-  document.getElementById('bc-summary').style.display = 'block';
-  document.getElementById('bc-chart-card').style.display = 'block';
-
-  const tiles = [];
-  if (bc.bodyFatPercent !== null) {
-    const isMale = patientProfile.personal.sex === 'male';
-    const threshold = isMale ? 20 : 28;
-    const flag = bc.bodyFatPercent > threshold + 8 ? 'warn' : bc.bodyFatPercent > threshold ? 'alert' : 'ok';
-    const flagText = bc.bodyFatPercent > threshold + 8 ? 'Elevated' : bc.bodyFatPercent > threshold ? 'Above optimal' : 'Optimal';
-    tiles.push({ value: bc.bodyFatPercent + '%', unit: '', label: 'Body Fat', flag, flagText });
-  }
-  if (bc.leanMuscleMass !== null) {
-    tiles.push({ value: bc.leanMuscleMass, unit: 'kg', label: 'Lean Muscle Mass', flag: 'ok', flagText: 'Recorded' });
-  }
-  if (bc.visceralFatRating !== null) {
-    const flag = bc.visceralFatRating >= 13 ? 'warn' : bc.visceralFatRating >= 10 ? 'alert' : 'ok';
-    const flagText = bc.visceralFatRating >= 13 ? 'High — flag' : bc.visceralFatRating >= 10 ? 'Borderline' : 'Normal';
-    tiles.push({ value: bc.visceralFatRating, unit: '', label: 'Visceral Fat Rating', flag, flagText });
-  }
-  if (bc.skeletalMuscleMass !== null) {
-    tiles.push({ value: bc.skeletalMuscleMass, unit: 'kg', label: 'Skeletal Muscle Mass', flag: 'ok', flagText: 'Recorded' });
-  }
-  if (bc.totalBodyWater !== null) {
-    const flag = bc.totalBodyWater < 45 ? 'warn' : bc.totalBodyWater < 50 ? 'alert' : 'ok';
-    const flagText = bc.totalBodyWater < 45 ? 'Low — hydration flag' : bc.totalBodyWater < 50 ? 'Below optimal' : 'Optimal';
-    tiles.push({ value: bc.totalBodyWater + '%', unit: '', label: 'Total Body Water', flag, flagText });
-  }
-  if (bc.boneMineralContent !== null) {
-    tiles.push({ value: bc.boneMineralContent, unit: 'kg', label: 'Bone Mineral Content', flag: 'ok', flagText: 'Recorded' });
-  }
-
-  document.getElementById('bc-tiles').innerHTML = tiles.map(t => `
-    <div class="metric-tile">
-      <div class="metric-value">${t.value}</div>
-      <div class="metric-unit">${t.unit}</div>
-      <div class="metric-label">${t.label}</div>
-      <div class="metric-flag ${t.flag}">${t.flagText}</div>
+<!-- ─── HERO ─────────────────────────────────────────────────── -->
+<section class="hero" id="home" aria-label="Hero">
+  <div class="hero-grid-bg" aria-hidden="true"></div>
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot" aria-hidden="true"></span>
+      Sentinel Agent — Now Live
     </div>
-  `).join('');
-
-  // Signals
-  const signals = [];
-  if (bc.visceralFatRating >= 13 && bc.leanMuscleMass && bc.leanMuscleMass < 55) {
-    signals.push({ type:'warning', text:'<strong>GLP-1 / AOD-9604 Signal:</strong> High visceral fat (≥13) combined with lower lean mass indicates strong metabolic candidacy.' });
-  }
-  if (bc.skeletalMuscleMass !== null && patientProfile.personal.height) {
-    const smmPerM2 = bc.skeletalMuscleMass / Math.pow(patientProfile.personal.height/100, 2);
-    if (smmPerM2 < 7.26) {
-      signals.push({ type:'info', text:'<strong>CJC-1295/Ipamorelin Signal:</strong> Relative skeletal muscle mass index (' + smmPerM2.toFixed(1) + ' kg/m²) suggests sarcopenic risk — GH secretagogue candidacy supported.' });
-    }
-  }
-  if (bc.totalBodyWater !== null && bc.totalBodyWater < 48) {
-    signals.push({ type:'warning', text:'<strong>Hydration Flag:</strong> Total body water below optimal range (' + bc.totalBodyWater + '%). Hydration protocol recommended alongside peptide therapy.' });
-  }
-
-  document.getElementById('bc-signals').innerHTML = signals.map(s =>
-    `<div class="flag-item ${s.type === 'warning' ? 'warning' : 'info'} mt-3">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 5V7.5M7 9V9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-      <div class="flag-text">${s.text}</div>
-    </div>`
-  ).join('');
-
-  renderBCChart();
-}
-
-function renderBCChart() {
-  const bc = patientProfile.bodyComposition;
-  if (bcChartInstance) bcChartInstance.destroy();
-  const ctx = document.getElementById('bcChart').getContext('2d');
-
-  const maxBF = patientProfile.personal.sex === 'male' ? 25 : 32;
-  const bfPct = bc.bodyFatPercent ? Math.min(100, (bc.bodyFatPercent / maxBF) * 100) : 0;
-  const vfPct = bc.visceralFatRating ? Math.min(100, (bc.visceralFatRating / 15) * 100) : 0;
-  const tbwPct = bc.totalBodyWater ? Math.min(100, (bc.totalBodyWater / 65) * 100) : 0;
-  const lmmPct = bc.leanMuscleMass ? Math.min(100, (bc.leanMuscleMass / 80) * 100) : 0;
-  const smmPct = bc.skeletalMuscleMass ? Math.min(100, (bc.skeletalMuscleMass / 40) * 100) : 0;
-  const bmcPct = bc.boneMineralContent ? Math.min(100, (bc.boneMineralContent / 4) * 100) : 0;
-
-  bcChartInstance = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: ['Body Fat %', 'Visceral Fat', 'Body Water %', 'Lean Muscle', 'Skeletal Muscle', 'Bone Mineral'],
-      datasets: [{
-        label: patientProfile.personal.name || 'Patient',
-        data: [bfPct, vfPct, tbwPct, lmmPct, smmPct, bmcPct],
-        fill: true,
-        backgroundColor: 'rgba(13,148,136,0.15)',
-        borderColor: '#0d9488',
-        pointBackgroundColor: '#4f98a3',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: '#0d9488',
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { r: {
-        beginAtZero: true, max: 100,
-        grid: { color: 'rgba(148,163,184,0.1)' },
-        angleLines: { color: 'rgba(148,163,184,0.1)' },
-        ticks: { display: false },
-        pointLabels: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
-      }},
-      plugins: { legend: { display: false } }
-    }
-  });
-}
-
-function handleEvoltUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const statusEl = document.getElementById('evolt-upload-status');
-  statusEl.style.display = 'flex';
-  statusEl.innerHTML = `<span class="spinner"></span>&nbsp; Processing ${file.name}...`;
-  setTimeout(() => {
-    statusEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6 10L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>&nbsp; File uploaded: <strong>${file.name}</strong>. For CSV parsing, values will be mapped to fields. Please verify entries below.`;
-  }, 1200);
-}
-
-// ─── BLOOD PANEL ──────────────────────────────────────────
-function initBloodPanel() {
-  Object.entries(BIOMARKERS).forEach(([section, markers]) => {
-    const container = document.getElementById('bm-' + (section === 'organFunction' ? 'organ' : section));
-    if (!container) return;
-    container.innerHTML = markers.map(m => `
-      <div class="biomarker-cell" id="bmc-${m.id}">
-        <div class="bm-name">${m.name}</div>
-        <div class="bm-range">${m.display}</div>
-        <div class="bm-input-row">
-          <input type="number" id="bm-${m.id}" step="any" placeholder="—"
-            oninput="updateBiomarker('${section}','${m.id}',this.value,'${m.low}','${m.high}')">
-          <span class="bm-unit">${m.unit}</span>
-          <div class="bm-status-dot" id="bmd-${m.id}"></div>
-        </div>
+    <h1 class="hero-title">
+      <span class="brand-name">HydraWell</span><br>
+      Medicine 5.0<br>Operating System
+    </h1>
+    <p class="hero-tagline">
+      AI-powered clinical intelligence for Australia's peptide therapy ecosystem. Built for AHPRA-registered prescribers.
+    </p>
+    <div class="hero-actions">
+      <a href="#demo" class="btn-primary">
+        Request a Demo
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="/agents" class="btn-outline">
+        View All Agents
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="hero-divider" aria-hidden="true"></div>
+    <div class="hero-stats" role="list" aria-label="Platform highlights">
+      <div role="listitem">
+        <div class="hero-stat-value">6</div>
+        <div class="hero-stat-label">AI Agents</div>
       </div>
-    `).join('');
-  });
-}
+      <div role="listitem">
+        <div class="hero-stat-value">HITL</div>
+        <div class="hero-stat-label">Human-in-the-Loop</div>
+      </div>
+      <div role="listitem">
+        <div class="hero-stat-value">AHPRA</div>
+        <div class="hero-stat-label">Compliant by Design</div>
+      </div>
+      <div role="listitem">
+        <div class="hero-stat-value">AU</div>
+        <div class="hero-stat-label">Built for Australia</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-function updateBiomarker(section, id, value, low, high) {
-  const v = parseFloat(value);
-  const sectionKey = section === 'organ' ? 'organFunction' : section;
-  if (!patientProfile.bloodPanel[sectionKey]) return;
-  patientProfile.bloodPanel[sectionKey][id] = isNaN(v) ? null : v;
+<!-- ─── PROBLEM ─────────────────────────────────────────────── -->
+<section class="section-problem" id="problem" aria-label="The Problem">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <div class="section-label">The Problem</div>
+      <h2 class="section-heading">Australian longevity medicine is broken</h2>
+      <p class="section-sub">A fragmented, paper-heavy system leaves patients underserved and practitioners exposed.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-card reveal reveal-d1">
+        <div class="problem-icon" aria-hidden="true">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="problem-stat">67%</div>
+        <h3>Healthcare access gaps</h3>
+        <p>Medicare caps and GP referral bottlenecks leave the majority of peptide therapy candidates without a compliant, affordable care pathway.</p>
+      </div>
+      <div class="problem-card reveal reveal-d2">
+        <div class="problem-icon" aria-hidden="true">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="problem-stat">0</div>
+        <h3>AI-native longevity platforms</h3>
+        <p>Zero AI-native longevity platforms exist in Australian clinical practice today. HydraWell is the first.</p>
+      </div>
+      <div class="problem-card reveal reveal-d3">
+        <div class="problem-icon" aria-hidden="true">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="problem-stat">80%</div>
+        <h3>GP cognitive load is admin</h3>
+        <p>Four in five minutes of a clinical consultation are consumed by documentation, eligibility checks, and protocol lookup — not patient care.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  const dot = document.getElementById('bmd-' + id);
-  if (!dot) return;
-  if (isNaN(v) || value === '') { dot.className = 'bm-status-dot'; return; }
-  if (v < parseFloat(low)) dot.className = 'bm-status-dot low';
-  else if (v > parseFloat(high)) dot.className = 'bm-status-dot high';
-  else dot.className = 'bm-status-dot normal';
-}
-
-function generatePathologyRequest() {
-  const goals = patientProfile.goals;
-  const container = document.getElementById('path-request');
-  container.style.display = 'block';
-
-  const panels = ['Complete Blood Count (CBC)', 'Metabolic Panel — Fasting Glucose, HbA1c, Fasting Insulin', 'Lipid Panel — TC, LDL, HDL, Triglycerides', 'Liver Function Tests (LFTs) — ALT, AST, GGT', 'Renal Function — Creatinine, eGFR, Urea', 'Vitamin D (25-OH-D)', 'Vitamin B12 + Folate', 'Iron Studies'];
-  if (goals.includes('hormone_optimisation') || goals.includes('muscle_gain')) panels.push('IGF-1', 'Testosterone (Total + Free)', 'DHEA-S', 'Cortisol (AM)');
-  if (goals.includes('weight_management') || goals.includes('metabolic_health')) panels.push('Thyroid Panel — TSH, fT3, fT4');
-  if (goals.includes('immune_support')) panels.push('WBC differential', 'Immunoglobulins');
-  if (goals.includes('sleep_quality') || goals.includes('anxiety_stress')) panels.push('Cortisol (AM + PM)', 'Homocysteine', 'Zinc + Magnesium');
-  if (goals.includes('gut_health') || goals.includes('injury_recovery')) panels.push('hs-CRP', 'ESR', 'Homocysteine', 'Ferritin');
-
-  container.innerHTML = `
-    <div class="alert alert-info mt-3">
+<!-- ─── MEDICINE 5.0 ─────────────────────────────────────────── -->
+<section class="section-m5" id="medicine5" aria-label="Medicine 5.0 Evolution">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <div class="section-label">The Evolution</div>
+      <h2 class="section-heading">Medicine 5.0 — The HITL Era</h2>
+      <p class="section-sub">Every generation of medicine has expanded human capability. Medicine 5.0 completes the loop — AI amplifies the clinician, the clinician validates the AI.</p>
+    </div>
+    <div class="m5-track reveal" role="list" aria-label="Medicine evolution timeline">
+      <div class="m5-era" role="listitem">
+        <div class="m5-node" aria-hidden="true"></div>
+        <div class="m5-ver">Medicine 1.0</div>
+        <div class="m5-name">Empirical</div>
+        <div class="m5-desc">Observation, herbalism &amp; traditional healing. Pattern recognition across generations.</div>
+      </div>
+      <div class="m5-era" role="listitem">
+        <div class="m5-node" aria-hidden="true"></div>
+        <div class="m5-ver">Medicine 2.0</div>
+        <div class="m5-name">Mechanistic</div>
+        <div class="m5-desc">Anatomy, surgery &amp; germ theory. The body as machine — understood and repaired.</div>
+      </div>
+      <div class="m5-era" role="listitem">
+        <div class="m5-node" aria-hidden="true"></div>
+        <div class="m5-ver">Medicine 3.0</div>
+        <div class="m5-name">Biomedical</div>
+        <div class="m5-desc">Pharmaceuticals, diagnostics &amp; evidence-based protocols. Population-scale intervention.</div>
+      </div>
+      <div class="m5-era" role="listitem">
+        <div class="m5-node" aria-hidden="true"></div>
+        <div class="m5-ver">Medicine 4.0</div>
+        <div class="m5-name">Digital</div>
+        <div class="m5-desc">EHR, telemedicine, genomics &amp; wearables. Data becomes the foundation of care.</div>
+      </div>
+      <div class="m5-era active" role="listitem" aria-current="true">
+        <div class="m5-node" aria-hidden="true"></div>
+        <div class="m5-ver">Medicine 5.0</div>
+        <div class="m5-name">AI-Human</div>
+        <div class="m5-desc">Agentic AI amplifies clinical intelligence. The clinician remains the final decision-maker.</div>
+        <div class="m5-hitl-tag">HITL Required</div>
+      </div>
+    </div>
+    <div class="m5-callout reveal">
+      <div class="m5-callout-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
       <div>
-        <strong>Recommended Pathology Request</strong><br>
-        Based on ${patientProfile.personal.name || 'this patient'}'s goals and intake answers, Sentinel recommends the following tests via <a href="https://bloodygood.com.au/pages/practitioners" target="_blank" style="color:var(--teal-light)">Bloody Good Tests Practitioner Portal</a>:
-        <ul style="margin-top:8px;padding-left:16px;line-height:2">
-          ${[...new Set(panels)].map(p => `<li>${p}</li>`).join('')}
-        </ul>
+        <h4>Why HITL is the only legal model under AHPRA</h4>
+        <p>Under AHPRA's professional standards and TGA Authorised Prescriber regulations, AI clinical decision support tools cannot replace prescriber judgment. Human-in-the-Loop (HITL) is not a design choice — it is the legal and ethical foundation of every HydraWell agent. All outputs require review and approval by an AHPRA-registered prescriber before any clinical action is taken.</p>
       </div>
     </div>
-  `;
-}
+  </div>
+</section>
 
-// ─── INTAKE COMPLETION ────────────────────────────────────
-function completeIntake() {
-  // Mark nav item complete
-  document.getElementById('step-num-0').innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  document.getElementById('nav-0').classList.add('completed');
-  goToStage(1);
-}
+<!-- ─── 6-AGENT ARCHITECTURE ─────────────────────────────────── -->
+<section class="section-agents" id="agents" aria-label="6-Agent Architecture">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <div class="section-label">6-Agent Architecture</div>
+      <h2 class="section-heading">The Six Heads of HydraWell</h2>
+      <p class="section-sub">Six specialised AI agents, each a domain expert. Coordinated by Hydra Prime — the meta-agent that orchestrates them all.</p>
+    </div>
+    <div class="agents-grid">
 
-// ─── ELIGIBILITY ENGINE ───────────────────────────────────
-function runEligibilityEngine() {
-  goToStage(3);
-  engineRunComplete = false;
-  document.getElementById('elig-grid-container').style.display = 'none';
-  document.getElementById('elig-chart-card').style.display = 'none';
-  document.getElementById('brief-btn').disabled = true;
-  document.getElementById('engine-progress').style.width = '0%';
-  document.getElementById('engine-status-title').textContent = 'Running Sentinel Eligibility Engine...';
-  document.getElementById('engine-status-sub').textContent = 'Cross-referencing patient data against 8 protocol pathways';
-  document.getElementById('engine-spinner').style.display = 'inline-block';
-  document.getElementById('contra-alerts').innerHTML = '';
-
-  const steps = [
-    [20, 'Analysing intake answers and medical history...'],
-    [40, 'Processing body composition signals...'],
-    [60, 'Evaluating blood panel biomarkers...'],
-    [80, 'Applying contraindication rules...'],
-    [100, 'Scoring protocol eligibility...']
-  ];
-
-  let i = 0;
-  function step() {
-    if (i >= steps.length) {
-      computeEligibility();
-      return;
-    }
-    const [pct, msg] = steps[i++];
-    document.getElementById('engine-progress').style.width = pct + '%';
-    document.getElementById('engine-status-sub').textContent = msg;
-    setTimeout(step, 400);
-  }
-  setTimeout(step, 200);
-}
-
-function computeEligibility() {
-  const p = patientProfile;
-  const bc = p.bodyComposition;
-  const bp = p.bloodPanel;
-  const contra = p.eligibility.contraindications;
-
-  function score(checks) {
-    let total = 0, max = 0;
-    checks.forEach(([weight, condition]) => { max += weight; if (condition) total += weight; });
-    return max > 0 ? Math.round((total / max) * 100) : 0;
-  }
-
-  const hasActiveCancer = contra.includes('active_cancer');
-  const hasPregnancy = contra.includes('pregnancy');
-  const hasEatingDisorder = contra.includes('eating_disorder');
-  const hasLiverDisease = p.medicalHistory.conditions.includes('liver_disease');
-  const hasKidneyDisease = p.medicalHistory.conditions.includes('kidney_disease');
-  const hasAlt3xULN = bp.organFunction.alt !== null && bp.organFunction.alt > 105;
-  const hasLowEGFR = bp.organFunction.egfr !== null && bp.organFunction.egfr < 30;
-
-  // ── CJC-1295 / IPAMORELIN ──
-  if (hasActiveCancer || hasPregnancy) {
-    p.eligibility.protocols.cjc1295_ipamorelin = { status:'contraindicated', confidence:0, rationale:'Active malignancy or pregnancy — GH secretagogues are absolutely contraindicated.' };
-  } else {
-    const conf = score([
-      [20, bp.hormonal.igf1 !== null && bp.hormonal.igf1 < 150],
-      [15, p.goals.includes('muscle_gain') || p.goals.includes('hormone_optimisation')],
-      [15, p.goals.includes('injury_recovery') || p.goals.includes('energy_fatigue')],
-      [10, bc.skeletalMuscleMass !== null && bc.skeletalMuscleMass < 25],
-      [10, p.lifestyle.sleepQuality === 'poor' || p.lifestyle.sleepQuality === 'fair'],
-      [10, p.personal.age && p.personal.age > 40],
-      [10, bc.leanMuscleMass !== null && bc.leanMuscleMass < 55],
-      [10, p.goals.includes('longevity')]
-    ]);
-    const status = conf >= 70 ? 'eligible' : conf >= 40 ? 'conditional' : 'not-indicated';
-    let rationale = '';
-    if (bp.hormonal.igf1 !== null && bp.hormonal.igf1 < 150) rationale += `Low IGF-1 (${bp.hormonal.igf1} ng/mL — below optimal 150). `;
-    if (bc.skeletalMuscleMass !== null && bc.skeletalMuscleMass < 25) rationale += 'Reduced skeletal muscle mass detected. ';
-    if (p.goals.includes('muscle_gain')) rationale += 'Patient goals include muscle gain/recomposition. ';
-    if (!rationale) rationale = 'Insufficient data for high-confidence assessment — conditional pending full biomarker review.';
-    p.eligibility.protocols.cjc1295_ipamorelin = { status, confidence:conf, rationale };
-  }
-
-  // ── BPC-157 ──
-  if (hasPregnancy) {
-    p.eligibility.protocols.bpc157 = { status:'contraindicated', confidence:0, rationale:'Pregnancy — all peptides contraindicated.' };
-  } else {
-    const conf = score([
-      [20, bp.inflammatory.crp !== null && bp.inflammatory.crp > 3],
-      [20, p.goals.includes('gut_health') || p.goals.includes('injury_recovery')],
-      [15, p.medicalHistory.conditions.includes('ibs_ibd')],
-      [15, p.goals.includes('injury_recovery') && bc.visceralFatRating === null],
-      [10, bp.inflammatory.esr !== null && bp.inflammatory.esr > 20],
-      [10, p.symptoms.free_text && (p.symptoms.free_text.toLowerCase().includes('pain') || p.symptoms.free_text.toLowerCase().includes('gut') || p.symptoms.free_text.toLowerCase().includes('knee') || p.symptoms.free_text.toLowerCase().includes('back'))],
-      [10, p.goals.includes('longevity')]
-    ]);
-    const status = conf >= 70 ? 'eligible' : conf >= 40 ? 'conditional' : 'not-indicated';
-    let rationale = '';
-    if (bp.inflammatory.crp !== null && bp.inflammatory.crp > 3) rationale += `Elevated hs-CRP (${bp.inflammatory.crp} mg/L — above 3.0 optimal). `;
-    if (p.goals.includes('injury_recovery')) rationale += 'Active injury recovery goal stated. ';
-    if (p.medicalHistory.conditions.includes('ibs_ibd')) rationale += 'IBS/IBD history supports gut-healing indication. ';
-    if (!rationale) rationale = 'Supportive goals present — conditional assessment, recommend bloods for confirmation.';
-    p.eligibility.protocols.bpc157 = { status, confidence:conf, rationale };
-  }
-
-  // ── THYMOSIN ALPHA-1 ──
-  if (hasActiveCancer || hasPregnancy) {
-    p.eligibility.protocols.thymosinAlpha1 = { status:'contraindicated', confidence:0, rationale:'Active malignancy or pregnancy — immunomodulatory peptides contraindicated pending oncology review.' };
-  } else {
-    const conf = score([
-      [30, p.medicalHistory.conditions.includes('autoimmune')],
-      [20, p.goals.includes('immune_support')],
-      [15, p.medicalHistory.conditions.includes('cancer_history')],
-      [15, bp.inflammatory.crp !== null && bp.inflammatory.crp > 5],
-      [10, p.lifestyle.stressLevel === 'high' || p.lifestyle.stressLevel === 'very_high'],
-      [10, bp.vitamins.vitaminD !== null && bp.vitamins.vitaminD < 50]
-    ]);
-    const status = conf >= 70 ? 'eligible' : conf >= 40 ? 'conditional' : 'not-indicated';
-    let rationale = '';
-    if (p.medicalHistory.conditions.includes('autoimmune')) rationale += 'Autoimmune condition — immune modulation indicated. ';
-    if (p.goals.includes('immune_support')) rationale += 'Patient goals include immune support. ';
-    if (!rationale) rationale = 'Limited immune indication from current data. Not recommended without further clinical workup.';
-    p.eligibility.protocols.thymosinAlpha1 = { status, confidence:conf, rationale };
-  }
-
-  // ── GLP-1 (SEMAGLUTIDE) ──
-  if (hasPregnancy || hasEatingDisorder) {
-    const reason = hasPregnancy ? 'Pregnancy — all peptides contraindicated.' : 'Active eating disorder — GLP-1/AOD-9604 are contraindicated.';
-    p.eligibility.protocols.glp1 = { status:'contraindicated', confidence:0, rationale:reason };
-  } else {
-    const conf = score([
-      [25, p.personal.bmi !== null && p.personal.bmi >= 30],
-      [15, bp.metabolic.hba1c !== null && bp.metabolic.hba1c >= 5.7],
-      [15, p.medicalHistory.conditions.includes('type2_diabetes') || p.medicalHistory.conditions.includes('prediabetes')],
-      [15, bc.visceralFatRating !== null && bc.visceralFatRating >= 13],
-      [10, bp.metabolic.fastingInsulin !== null && bp.metabolic.fastingInsulin > 12],
-      [10, p.goals.includes('weight_management') || p.goals.includes('metabolic_health')],
-      [10, p.personal.bmi !== null && p.personal.bmi >= 27]
-    ]);
-    const status = conf >= 70 ? 'eligible' : conf >= 40 ? 'conditional' : 'not-indicated';
-    let rationale = '';
-    if (p.personal.bmi !== null && p.personal.bmi >= 30) rationale += `BMI ${p.personal.bmi} ≥ 30 — meets primary GLP-1 threshold. `;
-    if (bp.metabolic.hba1c !== null && bp.metabolic.hba1c >= 5.7) rationale += `HbA1c ${bp.metabolic.hba1c}% (pre-diabetic range). `;
-    if (bc.visceralFatRating !== null && bc.visceralFatRating >= 13) rationale += `High visceral fat (${bc.visceralFatRating}). `;
-    if (!rationale) rationale = 'BMI/metabolic markers support assessment — confirm with fasting glucose and insulin.';
-    p.eligibility.protocols.glp1 = { status, confidence:conf, rationale };
-  }
-
-  // ── AOD-9604 ──
-  if (hasPregnancy || hasEatingDisorder) {
-    const reason = hasPregnancy ? 'Pregnancy — all peptides contraindicated.' : 'Active eating disorder — AOD-9604 contraindicated.';
-    p.eligibility.protocols.aod9604 = { status:'contraindicated', confidence:0, rationale:reason };
-  } else {
-    const conf = score([
-      [25, bc.visceralFatRating !== null && bc.visceralFatRating >= 11],
-      [20, p.personal.bmi !== null && p.personal.bmi >= 27],
-      [15, bc.bodyFatPercent !== null && bc.bodyFatPercent > 28],
-      [15, p.goals.includes('weight_management')],
-      [10, bp.metabolic.fastingGlucose !== null && bp.metabolic.fastingGlucose > 5.0],
-      [10, p.goals.includes('metabolic_health')],
-      [5, p.personal.bmi !== null && p.personal.bmi < 30]
-    ]);
-    const status = conf >= 70 ? 'eligible' : conf >= 40 ? 'conditional' : 'not-indicated';
-    let rationale = '';
-    if (bc.visceralFatRating !== null && bc.visceralFatRating >= 11) rationale += `Elevated visceral fat rating (${bc.visceralFatRating}). `;
-    if (bc.bodyFatPercent !== null && bc.bodyFatPercent > 28) rationale += `Body fat % (${bc.bodyFatPercent}%) above female optimal. `;
-    if (!rationale) rationale = 'Body composition data supports fat metabolism protocol assessment.';
-    p.eligibility.protocols.aod9604 = { status, confidence:conf, rationale };
-  }
-
-  // ── DSIP ──
-  if (hasPregnancy) {
-    p.eligibility.protocols.dsip = { status:'contraindicated', confidence:0, rationale:'Pregnancy — all peptides contraindicated.' };
-  } else {
-    const conf = score([
-      [30, p.lifestyle.sleepQuality === 'poor'],
-      [20, p.lifestyle.sleepHrs !== null && p.lifestyle.sleepHrs < 6],
-      [15, bp.hormonal.cortisol !== null && bp.hormonal.cortisol > 560],
-      [15, p.goals.includes('sleep_quality')],
-      [10, p.medicalHistory.conditions.includes('sleep_apnoea')],
-      [10, p.lifestyle.stressLevel === 'high' || p.lifestyle.stressLevel === 'very_high']
-    ]);
-    const status = conf >= 70 ? 'eligible' : conf >= 40 ? 'conditional' : 'not-indicated';
-    let rationale = '';
-    if (p.lifestyle.sleepQuality === 'poor') rationale += 'Poor sleep quality self-reported. ';
-    if (bp.hormonal.cortisol !== null && bp.hormonal.cortisol > 560) rationale += `Elevated cortisol (${bp.hormonal.cortisol} nmol/L — above 540 optimal). `;
-    if (p.goals.includes('sleep_quality')) rationale += 'Sleep optimisation is a primary patient goal. ';
-    if (!rationale) rationale = 'Sleep concerns noted — assessment supports conditional DSIP evaluation.';
-    p.eligibility.protocols.dsip = { status, confidence:conf, rationale };
-  }
-
-  // ── SELANK ──
-  if (hasPregnancy) {
-    p.eligibility.protocols.selank = { status:'contraindicated', confidence:0, rationale:'Pregnancy — all peptides contraindicated.' };
-  } else {
-    const conf = score([
-      [30, p.goals.includes('anxiety_stress')],
-      [20, p.lifestyle.stressLevel === 'high' || p.lifestyle.stressLevel === 'very_high'],
-      [15, bp.hormonal.cortisol !== null && bp.hormonal.cortisol > 560],
-      [15, p.medicalHistory.conditions.includes('mental_health')],
-      [10, p.goals.includes('cognitive_performance')],
-      [10, p.lifestyle.sleepQuality === 'poor']
-    ]);
-    const status = conf >= 70 ? 'eligible' : conf >= 40 ? 'conditional' : 'not-indicated';
-    let rationale = '';
-    if (p.goals.includes('anxiety_stress')) rationale += 'Anxiety/stress management is a stated patient goal. ';
-    if (p.lifestyle.stressLevel === 'high' || p.lifestyle.stressLevel === 'very_high') rationale += 'High self-reported stress level. ';
-    if (!rationale) rationale = 'Insufficient anxiety/stress indicators — consider further functional assessment.';
-    p.eligibility.protocols.selank = { status, confidence:conf, rationale };
-  }
-
-  // ── SEMAX ──
-  if (hasPregnancy) {
-    p.eligibility.protocols.semax = { status:'contraindicated', confidence:0, rationale:'Pregnancy — all peptides contraindicated.' };
-  } else {
-    const conf = score([
-      [35, p.goals.includes('cognitive_performance')],
-      [20, p.lifestyle.stressLevel === 'high' || p.lifestyle.stressLevel === 'very_high'],
-      [15, p.symptoms.free_text && (p.symptoms.free_text.toLowerCase().includes('brain') || p.symptoms.free_text.toLowerCase().includes('focus') || p.symptoms.free_text.toLowerCase().includes('memory') || p.symptoms.free_text.toLowerCase().includes('cognitive'))],
-      [15, p.personal.age && p.personal.age > 50],
-      [15, p.goals.includes('longevity')]
-    ]);
-    const status = conf >= 70 ? 'eligible' : conf >= 40 ? 'conditional' : 'not-indicated';
-    let rationale = '';
-    if (p.goals.includes('cognitive_performance')) rationale += 'Cognitive enhancement is a stated patient goal. ';
-    if (!rationale) rationale = 'Limited cognitive enhancement indication from current data. Not currently recommended.';
-    p.eligibility.protocols.semax = { status, confidence:conf, rationale };
-  }
-
-  // ── RISK FLAGS ──
-  p.eligibility.riskFlags = [];
-  if (hasAlt3xULN) p.eligibility.riskFlags.push({ type:'danger', text:`<strong>Hepatic Impairment Flag:</strong> ALT ${bp.organFunction.alt} U/L — greater than 3x ULN. All peptide therapies require prescriber review before initiation.` });
-  if (hasLowEGFR) p.eligibility.riskFlags.push({ type:'danger', text:`<strong>Renal Impairment Flag:</strong> eGFR ${bp.organFunction.egfr} mL/min/1.73m² — severe impairment threshold. Dose adjustment or contraindication may apply. Prescriber review required.` });
-  if (bp.hormonal.cortisol !== null && bp.hormonal.cortisol > 600) p.eligibility.riskFlags.push({ type:'warning', text:`<strong>Elevated Cortisol:</strong> ${bp.hormonal.cortisol} nmol/L — significantly elevated. HPA axis dysfunction should be evaluated before peptide initiation.` });
-  if (bp.vitamins.vitaminD !== null && bp.vitamins.vitaminD < 50) p.eligibility.riskFlags.push({ type:'warning', text:`<strong>Vitamin D Deficiency:</strong> ${bp.vitamins.vitaminD} nmol/L — below optimal (75 nmol/L). Vitamin D supplementation recommended concurrently.` });
-  if (bp.metabolic.hba1c !== null && bp.metabolic.hba1c >= 6.5) p.eligibility.riskFlags.push({ type:'danger', text:`<strong>Diabetic HbA1c Range:</strong> ${bp.metabolic.hba1c}% — above diagnostic threshold. GP co-management required for GLP-1 initiation.` });
-  if (p.medications.list && p.medications.list.toLowerCase().includes('metformin')) p.eligibility.riskFlags.push({ type:'info', text:`<strong>Metformin Noted:</strong> Concurrent Metformin use may potentiate GLP-1 metabolic effects. Monitor for hypoglycaemia.` });
-  if (bc.visceralFatRating !== null && bc.visceralFatRating >= 13) p.eligibility.riskFlags.push({ type:'warning', text:`<strong>High Visceral Fat:</strong> VFR ${bc.visceralFatRating} — elevated cardiovascular and metabolic risk. GLP-1 or AOD-9604 pathway prioritised.` });
-
-  // ── RECOMMENDED PATHWAY ──
-  const eligible = Object.entries(p.eligibility.protocols)
-    .filter(([k,v]) => v.status === 'eligible')
-    .sort((a,b) => b[1].confidence - a[1].confidence);
-  p.eligibility.recommendedPathway = eligible.slice(0,2).map(([k]) => k);
-
-  // ── CONTRAINDICATION RENDER ──
-  if (contra.length > 0) {
-    document.getElementById('contra-alerts').innerHTML = contra.map(c => {
-      const msgs = {
-        active_cancer: '🚫 Active malignancy detected — GH secretagogues (CJC-1295/Ipamorelin) are ABSOLUTELY CONTRAINDICATED. All remaining protocols require oncology co-approval.',
-        pregnancy: '🚫 Pregnancy/breastfeeding — ALL peptide therapies are CONTRAINDICATED. No protocols indicated at this time.',
-        eating_disorder: '🚫 Active eating disorder — GLP-1 (Semaglutide) and AOD-9604 are CONTRAINDICATED for this patient.'
-      };
-      return `<div class="alert alert-danger mb-3"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5V8M8 10.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><div>${msgs[c] || c}</div></div>`;
-    }).join('');
-  }
-
-  // ── RENDER ENGINE OUTPUT ──
-  document.getElementById('engine-spinner').style.display = 'none';
-  document.getElementById('engine-status-title').textContent = 'Eligibility Assessment Complete';
-  document.getElementById('engine-status-sub').textContent = `${Object.values(p.eligibility.protocols).filter(v=>v.status==='eligible').length} protocols eligible · ${Object.values(p.eligibility.protocols).filter(v=>v.status==='conditional').length} conditional · ${Object.values(p.eligibility.protocols).filter(v=>v.status==='not-indicated').length} not indicated`;
-
-  renderEligibilityGrid('elig-grid');
-  document.getElementById('elig-grid-container').style.display = 'block';
-  document.getElementById('elig-chart-card').style.display = 'block';
-  renderEligibilityChart();
-  document.getElementById('brief-btn').disabled = false;
-
-  // Mark step
-  document.getElementById('step-num-3').innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  document.getElementById('nav-3').classList.add('completed');
-
-  engineRunComplete = true;
-}
-
-function renderEligibilityGrid(containerId) {
-  const p = patientProfile;
-  const container = document.getElementById(containerId);
-  container.innerHTML = Object.entries(PROTOCOLS).map(([key, meta]) => {
-    const elig = p.eligibility.protocols[key];
-    const status = elig.status || 'not-indicated';
-    const conf = elig.confidence || 0;
-    const statusLabels = { eligible:'✅ ELIGIBLE', conditional:'⚠ CONDITIONAL', 'not-indicated':'❌ NOT INDICATED', contraindicated:'🚫 CONTRAINDICATED' };
-    return `
-      <div class="elig-card ${status}">
-        <div class="elig-header">
-          <div>
-            <div class="elig-name">${meta.label}</div>
-            <div class="elig-indication">${meta.indication}</div>
+      <div class="agent-card live reveal">
+        <div class="agent-header">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
           </div>
-          <div class="elig-status-badge ${status}">${statusLabels[status] || status}</div>
+          <span class="badge badge-live">● Live</span>
         </div>
-        ${status !== 'contraindicated' ? `
-        <div class="elig-confidence">
-          <div class="conf-track"><div class="conf-fill ${status}" style="width:${conf}%"></div></div>
-          <div class="conf-label"><span>Confidence</span><span class="font-mono">${conf}%</span></div>
-        </div>` : ''}
-        <div class="elig-rationale">${elig.rationale || '—'}</div>
+        <div class="agent-num">Agent 01</div>
+        <h3>Sentinel</h3>
+        <p>AI Patient Intake &amp; Eligibility Router. Screens patients for peptide therapy candidacy, surfaces red flags, and routes to the appropriate prescriber pathway.</p>
+        <a href="/sentinel" class="agent-cta">
+          Open Sentinel
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
       </div>
-    `;
-  }).join('');
-}
 
-function renderEligibilityChart() {
-  if (eligChartInstance) eligChartInstance.destroy();
-  const ctx = document.getElementById('eligChart').getContext('2d');
-  const p = patientProfile;
-  const labels = Object.values(PROTOCOLS).map(m => m.label);
-  const scores = Object.keys(PROTOCOLS).map(k => p.eligibility.protocols[k].confidence);
-  const colors = Object.keys(PROTOCOLS).map(k => {
-    const s = p.eligibility.protocols[k].status;
-    if (s === 'eligible') return 'rgba(16,185,129,0.7)';
-    if (s === 'conditional') return 'rgba(245,158,11,0.7)';
-    if (s === 'contraindicated') return 'rgba(244,63,94,0.7)';
-    return 'rgba(100,116,139,0.5)';
-  });
+      <div class="agent-card reveal reveal-d1">
+        <div class="agent-header">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="12" y2="13"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 02</div>
+        <h3>Architect</h3>
+        <p>Designs personalised peptide protocol stacks. Given biomarker data and patient profile, synthesises evidence-based protocol recommendations for prescriber review.</p>
+        <span class="agent-soon">In Development</span>
+      </div>
 
-  eligChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Confidence Score',
-        data: scores,
-        backgroundColor: colors,
-        borderColor: colors.map(c => c.replace('0.7','1').replace('0.5','0.8')),
-        borderWidth: 1,
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      indexAxis: 'y',
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` Confidence: ${ctx.parsed.x}% — ${patientProfile.eligibility.protocols[Object.keys(PROTOCOLS)[ctx.dataIndex]].status}`
-          }
-        }
-      },
-      scales: {
-        x: {
-          max: 100, beginAtZero: true,
-          grid: { color: 'rgba(148,163,184,0.08)' },
-          ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 } }
-        },
-        y: {
-          grid: { display: false },
-          ticks: { color: '#94a3b8', font: { family: 'Inter', size: 12 } }
-        }
-      }
-    }
-  });
-}
+      <div class="agent-card reveal reveal-d2">
+        <div class="agent-header">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 03</div>
+        <h3>Scribe</h3>
+        <p>Auto-generates SOAP notes from consultation transcripts. Transforms structured input into compliant clinical documentation — ready for prescriber sign-off in seconds.</p>
+        <span class="agent-soon">In Development</span>
+      </div>
 
-// ─── CLINICAL BRIEF ───────────────────────────────────────
-function generateClinicalBrief() {
-  goToStage(4);
-  const p = patientProfile;
-  const now = new Date();
+      <div class="agent-card reveal">
+        <div class="agent-header">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 04</div>
+        <h3>Compass</h3>
+        <p>Longitudinal biomarker trend analysis. Tracks patient markers over time, surfaces anomalies, and provides plain-language interpretation for prescribers and patients.</p>
+        <span class="agent-soon">In Development</span>
+      </div>
 
-  document.getElementById('brief-date-generated').textContent =
-    'Generated: ' + now.toLocaleDateString('en-AU', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) +
-    ' at ' + now.toLocaleTimeString('en-AU', { hour:'2-digit', minute:'2-digit' });
+      <div class="agent-card reveal reveal-d1">
+        <div class="agent-header">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 05</div>
+        <h3>Aegis</h3>
+        <p>AHPRA/TGA guardrails &amp; audit trails. Monitors all agent outputs for regulatory compliance, maintains immutable audit logs, and flags potential violations to prescribers.</p>
+        <span class="agent-soon">In Development</span>
+      </div>
 
-  // Patient stats
-  const bmi = p.personal.bmi;
-  const stats = [
-    { label:'Name', value: p.personal.name || '—', sub:'' },
-    { label:'Age', value: p.personal.age ? p.personal.age + ' yrs' : '—', sub: p.personal.sex ? p.personal.sex.charAt(0).toUpperCase() + p.personal.sex.slice(1) : '' },
-    { label:'BMI', value: bmi || '—', sub: bmi >= 30 ? 'Obese' : bmi >= 25 ? 'Overweight' : bmi ? 'Normal' : '' },
-    { label:'Height', value: p.personal.height ? p.personal.height + ' cm' : '—', sub:'' },
-    { label:'Weight', value: p.personal.weight ? p.personal.weight + ' kg' : '—', sub:'' },
-    { label:'Primary Goals', value: p.goals.length > 0 ? p.goals.length + ' goals' : '—', sub: p.goals.slice(0,2).map(g=>g.replace('_',' ')).join(', ') }
-  ];
-  document.getElementById('brief-stats').innerHTML = stats.map(s => `
-    <div class="brief-stat">
-      <div class="brief-stat-label">${s.label}</div>
-      <div class="brief-stat-value">${s.value}</div>
-      ${s.sub ? `<div class="brief-stat-sub">${s.sub}</div>` : ''}
+      <div class="agent-card reveal reveal-d2">
+        <div class="agent-header">
+          <div class="agent-icon" aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          </div>
+          <span class="badge badge-soon">Coming Soon</span>
+        </div>
+        <div class="agent-num">Agent 06</div>
+        <h3>Hydra Prime</h3>
+        <p>The meta-agent orchestrating all six heads. Coordinates multi-agent workflows, manages context across sessions, and ensures coherent, compliant care pathways across the platform.</p>
+        <span class="agent-soon">In Development</span>
+      </div>
+
     </div>
-  `).join('');
+    <div class="agents-more">
+      <a href="/agents" class="btn-outline">Explore the Full Agent Network →</a>
+    </div>
+  </div>
+</section>
 
-  // Body comp
-  const bc = p.bodyComposition;
-  const bcFields = [
-    ['Body Fat %', bc.bodyFatPercent, '%'],
-    ['Lean Muscle Mass', bc.leanMuscleMass, 'kg'],
-    ['Visceral Fat Rating', bc.visceralFatRating, ''],
-    ['Skeletal Muscle Mass', bc.skeletalMuscleMass, 'kg'],
-    ['Total Body Water', bc.totalBodyWater, '%'],
-    ['Bone Mineral Content', bc.boneMineralContent, 'kg']
-  ];
-  const bcWithData = bcFields.filter(([,v]) => v !== null && v !== undefined);
-  document.getElementById('brief-bc-content').innerHTML = bcWithData.length > 0
-    ? `<div class="brief-grid">${bcWithData.map(([label, val, unit]) => `
-        <div class="brief-stat">
-          <div class="brief-stat-label">${label}</div>
-          <div class="brief-stat-value">${val}${unit}</div>
-        </div>`).join('')}</div>`
-    : `<div class="text-sm text-muted">No body composition data entered. Recommend eVolt 360 scan prior to consultation.</div>`;
+<!-- ─── INTEGRATION PARTNERS ─────────────────────────────────── -->
+<section class="section-integrations" id="integrations" aria-label="Integration Partners">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <div class="section-label">Integration Partners</div>
+      <h2 class="section-heading">Built on Australian clinical infrastructure</h2>
+      <p class="section-sub">HydraWell connects directly with Australia's leading diagnostic and body composition platforms.</p>
+    </div>
+    <div class="integrations-row">
+      <div class="integration-card reveal">
+        <div class="integration-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+        </div>
+        <div>
+          <h3>Bloody Good Tests</h3>
+          <p>Australian concierge blood panel service. Direct biomarker data integration for peptide therapy eligibility and longitudinal tracking via Compass.</p>
+          <div class="tag">Blood Panels</div>
+        </div>
+      </div>
+      <div class="integration-card reveal reveal-d1">
+        <div class="integration-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div>
+          <h3>eVolt 360</h3>
+          <p>Medical-grade body composition analysis. Full segmental BIA data feeds directly into Sentinel eligibility assessments and Compass trend tracking.</p>
+          <div class="tag">Body Composition</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  // Blood panel flagged values
-  const flagged = [];
-  Object.entries(BIOMARKERS).forEach(([section, markers]) => {
-    const sectionKey = section === 'organ' ? 'organFunction' : section;
-    markers.forEach(m => {
-      const v = p.bloodPanel[sectionKey] && p.bloodPanel[sectionKey][m.id];
-      if (v !== null && v !== undefined) {
-        let status = '';
-        if (v < m.low) status = 'LOW';
-        else if (v > m.high) status = 'HIGH';
-        if (status) flagged.push({ name: m.name, value: v, unit: m.unit, status, range: m.display });
-      }
+<!-- ─── TEAM ─────────────────────────────────────────────────── -->
+<section class="section-team" id="team" aria-label="Team">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <div class="section-label">The Team</div>
+      <h2 class="section-heading">Built by clinicians &amp; technologists</h2>
+      <p class="section-sub">A multidisciplinary founding team at the intersection of AI, functional medicine, and Australian healthcare.</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar" aria-hidden="true">NL</div>
+        <h3>Nathan Luu</h3>
+        <div class="team-role">Founder &amp; CEO</div>
+        <p>AI agent architect, SaaS product builder, and functional longevity strategist. Leads HydraWell's product, technology, and go-to-market strategy.</p>
+      </div>
+      <div class="team-card reveal reveal-d1">
+        <div class="team-avatar" aria-hidden="true">CM</div>
+        <h3>Chloe Magick</h3>
+        <div class="team-role">Co-Founder</div>
+        <p>NLP Master Practitioner and wellness expert. Leads client experience, retreat operations, and the human-centred design of HydraWell's care pathways.</p>
+      </div>
+      <div class="team-card reveal reveal-d2">
+        <div class="team-avatar" aria-hidden="true">MM</div>
+        <h3>Dr. Mehdi Mojtabaie</h3>
+        <div class="team-role">Medical Director</div>
+        <p>AHPRA-registered prescriber specialising in functional and longevity medicine. Clinical lead for all peptide protocols, compliance frameworks, and prescriber workflows.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA ──────────────────────────────────────────────────── -->
+<section class="section-cta" id="demo" aria-label="Request a Demo">
+  <div class="cta-glow" aria-hidden="true"></div>
+  <div class="section-inner cta-content">
+    <div class="section-label reveal">Get Early Access</div>
+    <h2 class="section-heading reveal">Ready to run Medicine 5.0?</h2>
+    <p class="section-sub reveal">HydraWell is in limited early access. Request a demo to see the full 6-agent system — and learn how to deploy it in your practice.</p>
+    <div class="hero-actions reveal" style="justify-content:center; margin-top:0;">
+      <a href="mailto:hello@hydrawell.work" class="btn-primary">
+        Request a Demo
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="/sentinel" class="btn-outline">
+        Try Sentinel Now
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ───────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <a href="/" class="footer-logo" aria-label="HydraWell home">
+      <svg width="22" height="22" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <path d="M15 2.5C15 2.5 5.5 11.5 5.5 18C5.5 23.25 9.75 27.5 15 27.5C20.25 27.5 24.5 23.25 24.5 18C24.5 11.5 15 2.5 15 2.5Z" fill="#4f98a3" opacity="0.85"/>
+        <path d="M15 8.5C15 8.5 9.5 14.5 9.5 18.5C9.5 21.54 12 24 15 24C18 24 20.5 21.54 20.5 18.5C20.5 14.5 15 8.5 15 8.5Z" fill="#0f172a"/>
+        <path d="M15 13C15 13 11.5 16.5 11.5 19C11.5 20.93 13.07 22.5 15 22.5C16.93 22.5 18.5 20.93 18.5 19C18.5 16.5 15 13 15 13Z" fill="#4f98a3" opacity="0.55"/>
+      </svg>
+      <span class="footer-logo-text"><span>Hydra</span><span class="well">Well</span></span>
+    </a>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">AHPRA Compliance</a>
+    </div>
+  </div>
+  <div class="footer-compliance">
+    <strong>Regulatory Notice:</strong> HydraWell is a clinical decision support platform intended solely for use by AHPRA-registered prescribers. It does not constitute medical advice, diagnosis, or treatment. All AI-generated outputs require review and approval by a qualified prescriber before any clinical action. Peptide therapies require a valid prescription under TGA Authorised Prescriber requirements. Patient data is handled in-session only and is not stored or transmitted without explicit consent. Refer to the <a href="#">HydraWell Privacy Policy</a> and <a href="#">AHPRA Compliance Framework</a> for full terms. &nbsp;·&nbsp; © 2026 HydraWell Pty Ltd.
+  </div>
+</footer>
+
+<!-- ─── SCRIPTS ──────────────────────────────────────────────── -->
+<script>
+(function () {
+  // Nav scroll effect
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', function () {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  // Mobile hamburger
+  const btn = document.getElementById('hamburgerBtn');
+  const menu = document.getElementById('mobileMenu');
+  if (btn && menu) {
+    btn.addEventListener('click', function () {
+      const isOpen = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(isOpen));
     });
-  });
-
-  document.getElementById('brief-bp-content').innerHTML = flagged.length > 0
-    ? `<div class="biomarker-grid">${flagged.map(f => `
-        <div class="biomarker-cell" style="border-color:${f.status==='HIGH'?'var(--rose-border)':'var(--amber-border)'}">
-          <div class="bm-name">${f.name}</div>
-          <div class="bm-range">${f.range}</div>
-          <div class="flex items-center gap-2">
-            <span class="font-mono" style="font-size:16px;font-weight:700;color:${f.status==='HIGH'?'var(--rose)':'var(--amber)'}">${f.value} ${f.unit}</span>
-            <span class="range-tag ${f.status==='HIGH'?'high':'low'}">${f.status}</span>
-          </div>
-        </div>`).join('')}</div>`
-    : flagged.length === 0 && Object.values(p.bloodPanel.hormonal).every(v=>v===null)
-      ? `<div class="text-sm text-muted">No blood panel data entered. Recommend pathology prior to consultation — use the "Generate Pathology Request" button in Stage 3.</div>`
-      : `<div class="alert alert-info">All entered biomarkers are within reference ranges.</div>`;
-
-  // Eligibility matrix
-  renderEligibilityGrid('brief-elig-grid');
-
-  // Recommended pathway
-  const rec = p.eligibility.recommendedPathway;
-  if (rec.length > 0) {
-    document.getElementById('brief-pathway').innerHTML = rec.map((key, i) => {
-      const meta = PROTOCOLS[key];
-      const elig = p.eligibility.protocols[key];
-      return `
-        <div class="pathway-card ${i > 0 ? 'mt-3' : ''}">
-          <div class="pathway-rank">${i === 0 ? 'Primary Recommendation' : 'Secondary Consideration'}</div>
-          <div class="pathway-name">${meta.label}</div>
-          <div class="pathway-rationale">${elig.rationale}</div>
-        </div>
-      `;
-    }).join('');
-  } else {
-    document.getElementById('brief-pathway').innerHTML = `<div class="alert alert-warning">No protocols reached eligible threshold. Review patient data completeness and/or conduct further clinical investigation before prescribing.</div>`;
+    menu.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+    });
   }
 
-  // Risk flags
-  const flags = [...p.eligibility.riskFlags];
-  if (p.eligibility.contraindications.includes('active_cancer')) flags.unshift({ type:'danger', text:'<strong>CRITICAL — Active Cancer:</strong> GH secretagogues absolutely contraindicated. All protocols require oncology co-approval.' });
-  if (p.eligibility.contraindications.includes('pregnancy')) flags.unshift({ type:'danger', text:'<strong>CRITICAL — Pregnancy/Breastfeeding:</strong> ALL peptide therapies contraindicated.' });
-
-  document.getElementById('brief-flags').innerHTML = flags.length > 0
-    ? flags.map(f => `
-        <div class="flag-item ${f.type}">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 5V7.5M7 9V9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-          <div class="flag-text">${f.text}</div>
-        </div>`).join('')
-    : `<div class="flag-item info"><div class="flag-text">No critical risk flags identified from available data. Standard prescriber review applies.</div></div>`;
-
-  // Mark complete
-  document.getElementById('step-num-4').innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  document.getElementById('nav-4').classList.add('completed');
-}
-
-// ─── DEMO PATIENT ─────────────────────────────────────────
-function loadDemoPatient() {
-  // Personal
-  document.getElementById('p-name').value = 'Sarah Mitchell';
-  document.getElementById('p-dob').value = '1977-03-15';
-  document.getElementById('p-sex').value = 'female';
-  document.getElementById('p-height').value = '168';
-  document.getElementById('p-weight').value = '82';
-  document.getElementById('p-email').value = 'sarah.mitchell@demo.com';
-  document.getElementById('p-phone').value = '+61 400 000 001';
-  document.getElementById('p-referral').value = 'gp';
-
-  patientProfile.personal.name = 'Sarah Mitchell';
-  patientProfile.personal.dob = '1977-03-15';
-  patientProfile.personal.sex = 'female';
-  patientProfile.personal.height = 168;
-  patientProfile.personal.weight = 82;
-  patientProfile.personal.email = 'sarah.mitchell@demo.com';
-  patientProfile.personal.phone = '+61 400 000 001';
-  patientProfile.personal.referral = 'gp';
-  updateDOB('1977-03-15');
-  computeBMI();
-
-  // Goals
-  ['weight_management', 'sleep_quality', 'injury_recovery'].forEach(g => {
-    patientProfile.goals.push(g);
-    const chips = document.querySelectorAll('#goals-chips .chip input');
-    chips.forEach(cb => { if (cb.value === g) { cb.checked = true; cb.parentElement.classList.add('selected'); } });
-  });
-  document.getElementById('cond-weight').style.display = 'block';
-  document.getElementById('cond-injury').style.display = 'block';
-  document.getElementById('p-injury-site').value = 'Right knee';
-  patientProfile.goals.goalDetails = { injurySite: 'Right knee' };
-
-  // Symptoms
-  document.getElementById('p-symptoms').value = 'Persistent right knee pain (6 months), difficulty sleeping — waking 2-3x per night, low energy especially afternoons, mild brain fog, increased waist circumference over the past 2 years despite diet changes.';
-  patientProfile.symptoms.free_text = 'Persistent right knee pain (6 months), difficulty sleeping — waking 2-3x per night, low energy especially afternoons, mild brain fog, increased waist circumference over the past 2 years despite diet changes.';
-
-  // Medical history
-  const condChips = document.querySelectorAll('#conditions-chips .chip input');
-  condChips.forEach(cb => { if (cb.value === 'prediabetes') { cb.checked = true; cb.parentElement.classList.add('selected'); patientProfile.medicalHistory.conditions.push('prediabetes'); } });
-  document.getElementById('p-sleep').value = '5.5';
-  document.getElementById('p-sleep-quality').value = 'poor';
-  document.getElementById('p-stress').value = 'high';
-  document.getElementById('p-exercise').value = '1-2';
-  patientProfile.lifestyle.sleepHrs = 5.5;
-  patientProfile.lifestyle.sleepQuality = 'poor';
-  patientProfile.lifestyle.stressLevel = 'high';
-  patientProfile.lifestyle.exerciseFreq = '1-2';
-
-  // Medications
-  document.getElementById('p-medications').value = 'Metformin 500mg BD (commenced 3 months ago), Vitamin D 2000IU daily';
-  patientProfile.medications.list = 'Metformin 500mg BD (commenced 3 months ago), Vitamin D 2000IU daily';
-
-  // Body composition
-  const bcData = { bodyFatPercent: 34.2, leanMuscleMass: 50.8, visceralFatRating: 14, skeletalMuscleMass: 21.3, totalBodyWater: 48.2, boneMineralContent: 2.4 };
-  const bcFields = { 'bc-bf': 34.2, 'bc-lmm': 50.8, 'bc-vf': 14, 'bc-smm': 21.3, 'bc-tbw': 48.2, 'bc-bmc': 2.4 };
-  Object.entries(bcFields).forEach(([id, val]) => { const el = document.getElementById(id); if(el) el.value = val; });
-  Object.assign(patientProfile.bodyComposition, bcData);
-  renderBodyCompSummary();
-
-  // Blood panel — hormonal
-  const bpHormonal = { igf1: 128, cortisol: 620 };
-  const bpInflammatory = { crp: 4.8 };
-  const bpMetabolic = { hba1c: 5.9, fastingGlucose: 5.8 };
-  const bpVitamins = { vitaminD: 38 };
-
-  Object.entries(bpHormonal).forEach(([id, val]) => {
-    const el = document.getElementById('bm-' + id); if(el) { el.value = val; }
-    patientProfile.bloodPanel.hormonal[id] = val;
-    const m = BIOMARKERS.hormonal.find(x=>x.id===id);
-    if(m) { const dot = document.getElementById('bmd-'+id); if(dot) dot.className = 'bm-status-dot ' + (val<m.low?'low':val>m.high?'high':'normal'); }
-  });
-  Object.entries(bpInflammatory).forEach(([id, val]) => {
-    const el = document.getElementById('bm-' + id); if(el) { el.value = val; }
-    patientProfile.bloodPanel.inflammatory[id] = val;
-    const m = BIOMARKERS.inflammatory.find(x=>x.id===id);
-    if(m) { const dot = document.getElementById('bmd-'+id); if(dot) dot.className = 'bm-status-dot ' + (val<m.low?'low':val>m.high?'high':'normal'); }
-  });
-  Object.entries(bpMetabolic).forEach(([id, val]) => {
-    const el = document.getElementById('bm-' + id); if(el) { el.value = val; }
-    patientProfile.bloodPanel.metabolic[id] = val;
-    const m = BIOMARKERS.metabolic.find(x=>x.id===id);
-    if(m) { const dot = document.getElementById('bmd-'+id); if(dot) dot.className = 'bm-status-dot ' + (val<m.low?'low':val>m.high?'high':'normal'); }
-  });
-  Object.entries(bpVitamins).forEach(([id, val]) => {
-    const el = document.getElementById('bm-' + id); if(el) { el.value = val; }
-    patientProfile.bloodPanel.vitamins[id] = val;
-    const m = BIOMARKERS.vitamins.find(x=>x.id===id);
-    if(m) { const dot = document.getElementById('bmd-'+id); if(dot) dot.className = 'bm-status-dot ' + (val<m.low?'low':val>m.high?'high':'normal'); }
-  });
-
-  // Go to stage 1 to show populated data
-  goToStage(0);
-  showIntakeTab(0);
-
-  // Flash demo notification
-  const banner = document.createElement('div');
-  banner.className = 'alert alert-info';
-  banner.style.cssText = 'position:fixed;top:70px;right:24px;z-index:999;max-width:320px;box-shadow:var(--shadow-lg);animation:fadeIn 0.3s ease';
-  banner.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 6V10M7 4.5V5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><div><strong>Demo patient loaded:</strong> Sarah Mitchell, 47F. Navigate through all stages and click "Run Eligibility Engine" to see the full assessment.</div>`;
-  document.body.appendChild(banner);
-  setTimeout(() => banner.remove(), 5000);
-}
-
-// ─── RESET ────────────────────────────────────────────────
-function resetAll() {
-  if (!confirm('Reset all patient data and start over?')) return;
-  location.reload();
-}
-
-// ─── INIT ─────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  initBloodPanel();
-});
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -32px 0px' });
+    reveals.forEach(function (el) { io.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add('in'); });
+  }
+})();
 </script>
 </body>
 </html>
